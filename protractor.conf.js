@@ -59,7 +59,7 @@ const config = {
     unexpectedAlertBehaviour: 'accept',
     chromeOptions: {
       args: [
-        // "--headless",
+        "--headless",
         '--no-sandbox',
         '--disable-gpu',
         '--disable-sync',
