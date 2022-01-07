@@ -1,15 +1,13 @@
 // Protractor configuration
 // https://github.com/angular/protractor/blob/master/referenceConf.js
-
-'use strict';
-/* globals browser */
+/* global browser */
 const config = {
   // The timeout for each script run on the browser. This should be longer
   // than the maximum time your application needs to stabilize between tasks.
   allScriptsTimeout: 110000,
   // A base URL for your application under test. Calls to protractor.get()
   // with relative paths will be prepended with this.
-  baseUrl: 'http://localhost:' + (process.env.PORT || '9000'),
+  baseUrl: 'http://localhost:' + (process.env.PORT || '3000'),
   // chromeDriver: './node_modules/protractor/node_modules/webdriver-manager/selenium/chromedriver_2.46',
   // If true, only chromedriver will be started, not a standalone selenium.
   // Tests for browsers other than chrome will not run.
@@ -18,7 +16,8 @@ const config = {
   // list of files / patterns to load in the browser
   specs: [
     // 'e2e/single.button.demo.spec.js'
-    'e2e/**/*.spec.js'
+    'test.spec.js'
+    // 'e2e/**/*.spec.js'
   ],
 
   // Patterns to exclude.
@@ -30,7 +29,7 @@ const config = {
   // https://code.google.com/p/selenium/wiki/DesiredCapabilities
   // and
   // https://code.google.com/p/selenium/source/browse/javascript/webdriver/capabilities.js
-  multiCapabilities: [{
+  multiCapabilities: [/*{
     browserName: 'firefox',
     'moz:firefoxOptions': {
       args: [
@@ -55,7 +54,7 @@ const config = {
         'media.navigator.streams.fake': true
       }
     }
-  }, {
+  }, */{
     browserName: 'chrome',
     unexpectedAlertBehaviour: 'accept',
     chromeOptions: {
@@ -103,9 +102,9 @@ const config = {
     browser.driver.sleep(1000);
   }
 };
-// exports.config.capabilities.chromeOptions.binary = __dirname + '/chrome-linux/chrome';
+
 if (process.env.TRAVIS) {
-  config.multiCapabilities = [{
+  config.multiCapabilities = [/*{
     browserName: 'firefox',
     'moz:firefoxOptions': {
       args: [
@@ -130,7 +129,7 @@ if (process.env.TRAVIS) {
         'media.navigator.streams.fake': true
       }
     }
-  }, {
+  }, */{
     browserName: 'chrome',
     unexpectedAlertBehaviour: 'accept',
     chromeOptions: {

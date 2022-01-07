@@ -1,9 +1,9 @@
 'use strict';
-var app = require('../../server/app');
+//var app = require('../../server/app');
 var Q = require('q');
-var Brokerage = require('../../server/api/brokerage/brokerage.model');
-var User = require('../../server/api/user/user.model');
-var Acl = require('../../server/api/acl/acl.model');
+//var Brokerage = require('../../server/api/brokerage/brokerage.model');
+//var User = require('../../server/api/user/user.model');
+//var Acl = require('../../server/api/acl/acl.model');
 
 describe('Main View', function() {
   var page;
