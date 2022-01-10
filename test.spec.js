@@ -1,57 +1,19 @@
 /* global by beforeEach beforeAll describe it afterEach */
+
 const { browser } = require('protractor');
-const log = require('./log/log.js');
+const log = require('./log');
+const config = require('./config');
 const assert = require('assert');
+log.init(config.logger);
+
 let sessionId;
 let iframeElement;
 let firstWindow;
 let secondWindow;
 let response;
-const TIMEOUT = 1000 * 5 * 10; // 50 sec
 
-const env = {
-  dev: {
-    pak: 'DEV2',
-    externalId: 'videoEngager',
-    firstName: 'name',
-    lastName: 'last',
-    email: 't@t',
-    userName: 't',
-    id: '123',
-    subject: 'subj',
-    hideChat: true,
-    hideInfo: true,
-    baseURL: 'http://dev.videoengager.com'
-  },
-  staging: {
-    pak: '72884930-79d1-3221-166d-58b3a9894e16',
-    externalId: 'test',
-    firstName: 'Slav',
-    lastName: 'Hadjidimitrov',
-    email: 'slav@videoengager.com',
-    userName: 't',
-    id: '123',
-    subject: 'subj',
-    hideChat: true,
-    hideInfo: true,
-    baseURL: 'http://staging.leadsecure.com'
-  },
-  prod: {
-    pak: 'b17cd9a8-e00d-7e98-2894-d33e473e2bbb',
-    externalId: 'videoEngager',
-    firstName: 'name',
-    lastName: 'last',
-    email: 'slav@videoengager.com',
-    userName: 't',
-    id: '123',
-    subject: 'subj',
-    hideChat: true,
-    hideInfo: true,
-    baseURL: 'http://prod.leadsecure.com'
-  }
-};
-
-const SEL = 'staging';
+const TIMEOUT = config.timeout;
+const TEST_ENV = config.test_env;
 
 const joinCall = function () {
   return browser.wait(function () {
@@ -174,7 +136,7 @@ const establishConnection = function () {
       return browser.switchTo().window(secondWindow);
     })
     .then(function () {
-      const url2 = env[SEL].baseURL + '/static/agent.popup.cloud.html';
+      const url2 = TEST_ENV.baseURL + '/static/agent.popup.cloud.html';
       return browser.get(url2);
     })
     .then(function () {
@@ -182,10 +144,10 @@ const establishConnection = function () {
     })
     .then(function () {
       let script = '_videoengager.init(';
-      script += ` {pak:'${env[SEL].pak}', externalId:'${env[SEL].externalId}'}, `;
-      script += ` {firstName:'${env[SEL].firstName}', lastName:'${env[SEL].lastName}', email: '${env[SEL].email}', userName: '${env[SEL].userName}'}, `;
-      script += ` {firstName:'${env[SEL].firstName}', lastName:'${env[SEL].lastName}', email: '${env[SEL].email}', id: '${env[SEL].id}', subject: '${env[SEL].subject}'}, `;
-      script += ` {hideChat: ${env[SEL].hideChat}, hideInfo: ${env[SEL].hideInfo}} `;
+      script += ` {pak:'${TEST_ENV.pak}', externalId:'${TEST_ENV.externalId}'}, `;
+      script += ` {firstName:'${TEST_ENV.firstName}', lastName:'${TEST_ENV.lastName}', email: '${TEST_ENV.email}', userName: '${TEST_ENV.userName}'}, `;
+      script += ` {firstName:'${TEST_ENV.firstName}', lastName:'${TEST_ENV.lastName}', email: '${TEST_ENV.email}', id: '${TEST_ENV.id}', subject: '${TEST_ENV.subject}'}, `;
+      script += ` {hideChat: ${TEST_ENV.hideChat}, hideInfo: ${TEST_ENV.hideInfo}} `;
       script += ');';
       return browser.driver.executeScript(script);
     })
@@ -274,13 +236,13 @@ const isPrecall = function () {
 };
 
 const callEstablishedByChatToken = function () {
+  log.debug('Waiting for chet_token to verify call establishment');
   return browser.wait(async function () {
     return browser.driver.executeScript('return (window.getVeContext().chat_token != null)')
       .then(function (result) {
         if (result === true) {
           return true;
         }
-        log.debug('callEstablishedByChatToken ' + result);
         return false;
       }, function (err) {
         log.debug(err);
@@ -356,7 +318,7 @@ describe('make a successfull call', function () {
         return finishCall();
       })
       .catch(function (e) {
-        assert.ifError(e);
+        assert.ifdebug(e);
         return finishCall();
       });
   });
