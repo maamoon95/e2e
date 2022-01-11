@@ -318,7 +318,7 @@ describe('make a successfull call', function () {
         return finishCall();
       })
       .catch(function (e) {
-        assert.ifdebug(e);
+        assert.ifError(e);
         return finishCall();
       });
   });

@@ -1,6 +1,11 @@
 // Protractor configuration
 // https://github.com/angular/protractor/blob/master/referenceConf.js
-/* global browser */
+/* global browser jasmine */
+const getTime = function () {
+  const now = new Date();
+  return `${now.getFullYear()}.${now.getMonth() + 1}.${now.getDate()}_${now.getHours()}.${now.getMinutes()}.${now.getSeconds()}`;
+};
+
 const config = {
   // The timeout for each script run on the browser. This should be longer
   // than the maximum time your application needs to stabilize between tasks.
@@ -29,7 +34,7 @@ const config = {
   // https://code.google.com/p/selenium/wiki/DesiredCapabilities
   // and
   // https://code.google.com/p/selenium/source/browse/javascript/webdriver/capabilities.js
-  multiCapabilities: [/*{
+  multiCapabilities: [/* {
     browserName: 'firefox',
     'moz:firefoxOptions': {
       args: [
@@ -55,42 +60,42 @@ const config = {
       }
     }
   }, */{
-    browserName: 'chrome',
-    unexpectedAlertBehaviour: 'accept',
-    chromeOptions: {
-      args: [
-        "--headless",
-        '--no-sandbox',
-        '--disable-gpu',
-        '--disable-sync',
-        '--no-first-run',
-        // "--user-data-dir=./tmp/chrome",
-        // "--remote-debugging-port=9222",
-        '--window-size=800,600',
-        '--use-fake-ui-for-media-stream',
-        '--use-fake-device-for-media-stream',
-        '--autoplay-policy=no-user-gesture-required',
-        '--allow-file-access-from-files',
-        '--disable-web-security',
-        '--disable-infobars',
-        '--disable-extensions'
-      ],
-      prefs: {
-        VideoCaptureAllowedUrls: ['*'],
-        'profile.default_content_setting_values.media_stream_mic': 1,
-        'profile.default_content_setting_values.media_stream_camera': 1,
-        'profile.default_content_setting_values.geolocation': 1,
-        'profile.default_content_setting_values.notifications': 1
+      browserName: 'chrome',
+      unexpectedAlertBehaviour: 'accept',
+      chromeOptions: {
+        args: [
+          '--headless',
+          '--no-sandbox',
+          '--disable-gpu',
+          '--disable-sync',
+          '--no-first-run',
+          // "--user-data-dir=./tmp/chrome",
+          // "--remote-debugging-port=9222",
+          '--window-size=800,600',
+          '--use-fake-ui-for-media-stream',
+          '--use-fake-device-for-media-stream',
+          '--autoplay-policy=no-user-gesture-required',
+          '--allow-file-access-from-files',
+          '--disable-web-security',
+          '--disable-infobars',
+          '--disable-extensions'
+        ],
+        prefs: {
+          VideoCaptureAllowedUrls: ['*'],
+          'profile.default_content_setting_values.media_stream_mic': 1,
+          'profile.default_content_setting_values.media_stream_camera': 1,
+          'profile.default_content_setting_values.geolocation': 1,
+          'profile.default_content_setting_values.notifications': 1
+        }
       }
-    }
-  }],
+    }],
   maxSessions: 1,
   // ----- The test framework -----
   //
   // Jasmine and Cucumber are fully supported as a test and assertion framework.
   // Mocha has limited beta support. You will need to include your own
   // assertion framework if working with mocha.
-  framework: 'jasmine',
+  framework: 'jasmine2',
 
   // ----- Options to be passed to minijasminenode -----
   //
@@ -100,11 +105,17 @@ const config = {
   },
   onPrepare: function () {
     browser.driver.sleep(1000);
+    const jasmineReporters = require('jasmine-reporters');
+    jasmine.getEnv().addReporter(new jasmineReporters.JUnitXmlReporter({
+      consolidateAll: true,
+      savePath: 'testresults',
+      filePrefix: getTime()
+    }));
   }
 };
 
 if (process.env.TRAVIS) {
-  config.multiCapabilities = [/*{
+  config.multiCapabilities = [/* {
     browserName: 'firefox',
     'moz:firefoxOptions': {
       args: [
@@ -130,34 +141,34 @@ if (process.env.TRAVIS) {
       }
     }
   }, */{
-    browserName: 'chrome',
-    unexpectedAlertBehaviour: 'accept',
-    chromeOptions: {
-      args: [
-        '--headless',
-        '--no-sandbox',
-        '--disable-gpu',
-        '--disable-sync',
-        '--no-first-run',
-        // "--user-data-dir=./tmp/chrome",
-        // "--remote-debugging-port=9222",
-        '--window-size=800,600',
-        '--use-fake-ui-for-media-stream',
-        '--use-fake-device-for-media-stream',
-        '--autoplay-policy=no-user-gesture-required',
-        '--allow-file-access-from-files',
-        '--disable-web-security',
-        '--disable-infobars',
-        '--disable-extensions'
-      ],
-      prefs: {
-        VideoCaptureAllowedUrls: ['*'],
-        'profile.default_content_setting_values.media_stream_mic': 1,
-        'profile.default_content_setting_values.media_stream_camera': 1,
-        'profile.default_content_setting_values.geolocation': 1,
-        'profile.default_content_setting_values.notifications': 1
+      browserName: 'chrome',
+      unexpectedAlertBehaviour: 'accept',
+      chromeOptions: {
+        args: [
+          '--headless',
+          '--no-sandbox',
+          '--disable-gpu',
+          '--disable-sync',
+          '--no-first-run',
+          // "--user-data-dir=./tmp/chrome",
+          // "--remote-debugging-port=9222",
+          '--window-size=800,600',
+          '--use-fake-ui-for-media-stream',
+          '--use-fake-device-for-media-stream',
+          '--autoplay-policy=no-user-gesture-required',
+          '--allow-file-access-from-files',
+          '--disable-web-security',
+          '--disable-infobars',
+          '--disable-extensions'
+        ],
+        prefs: {
+          VideoCaptureAllowedUrls: ['*'],
+          'profile.default_content_setting_values.media_stream_mic': 1,
+          'profile.default_content_setting_values.media_stream_camera': 1,
+          'profile.default_content_setting_values.geolocation': 1,
+          'profile.default_content_setting_values.notifications': 1
+        }
       }
-    }
-  }];
+    }];
 }
 exports.config = config;

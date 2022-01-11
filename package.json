@@ -8,7 +8,7 @@
     "webdriver": "npx webdriver-manager update --standalone",
     "protractor": "npx protractor",
     "test": "npm-run-all -p -r start protractor"
-},
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "eslint": "^5.16.0",
+    "jasmine-reporters": "^2.5.0",
     "jasmine-spec-reporter": "^4.2.1",
     "jshint-stylish": "~2.2.1",
     "semistandard": "^16.0.1",

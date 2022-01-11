@@ -45,7 +45,7 @@ module.exports = {
   // Server port
   port: process.env.PORT || 3000,
   logger: {
-    exportToFile: true,
+    exportToFile: false,
     exportToFilePath: './output.csv',
     level: 'debug',
     levels: {
