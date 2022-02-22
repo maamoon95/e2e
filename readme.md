@@ -15,10 +15,12 @@ npm run dev-test
 
 ## Configuration
 
-"npm run test" command will run "server.js" which will run a static visitor page in :3000 port with "npx protractor" .
+"npm run dev-test" command will run "server.js" (which will run a static visitor page in :3000 port) and "npx protractor".
 
-Tests are pointing to staging.
+Set "NODE_ENV" as "test", "production" or "staging" to switch between servers.
 
-Configure this from "test.spec.js" and "static/single-button-genesys-demo.html"
+Configure test parameters from "tests/lib/config.js"
 
 Protractor configurations are from: "./protractor.conf.js"
+
+Template test: "single.button.demo.spec.js"
