@@ -4,8 +4,8 @@ var agent = webdriverio.remote(options);
 var visitor = webdriverio.remote(options);
 var visitor1 = webdriverio.remote(options);
 
-var Agent = require('./main/agent')
-var Visitor = require('./main/visitor')
+var Agent = require('../main/agent')
+var Visitor = require('../main/visitor')
 
 var prod = {url:'https://prod.leadsecure.com/',
             user:'veios@ve',

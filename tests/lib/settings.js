@@ -1,6 +1,5 @@
 /* global by beforeEach beforeAll  */
 const { browser } = require('protractor');
-require('../server/app');
 const log = require('../server/log/log.js');
 
 const Brokerage = require('../server/api/brokerage/brokerage.model');
@@ -112,7 +111,7 @@ const validateConnection = function () {
 };
 
 const establishConnection = function () {
-  const url = 'http://localhost:9000/static/e2e/single-button-genesys-demo.html';
+  const url = 'http://localhost:3000/single-button-genesys-demo.html';
   return browser.driver.get(url)
     .then(function () {
       browser.driver.manage().window().maximize();

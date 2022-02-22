@@ -1,0 +1,19 @@
+language: node_js
+sudo: required
+dist: bionic
+group: deprecated-2017Q
+addons:
+  chrome: stable
+node_js:
+  - '12.22.7'
+services:
+  - mongodb
+  - xvfb
+cache:
+  directories:
+    - node_modules
+    - $HOME/.cache/pip
+before_script:
+  - npm install
+  - npm run webdriver
+  - npm run test
