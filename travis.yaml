@@ -16,4 +16,4 @@ cache:
 before_script:
   - npm install
   - npm run webdriver
-  - npm run test
+  - npm run dev-test
