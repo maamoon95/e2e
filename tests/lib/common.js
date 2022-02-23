@@ -11,6 +11,7 @@ let firstWindow;
 let secondWindow;
 let response;
 let token;
+let brokerage;
 
 const getGuid = function () {
   function s4 () {
@@ -41,6 +42,17 @@ const execute = function (str) {
 
 const switchToAgent = function () {
   return browser.switchTo().window(secondWindow);
+};
+
+const isBrowserClosed = function (browser) {
+  let isClosed = false;
+  try {
+    browser.driver.getTitle();
+  } catch (e) {
+    isClosed = true;
+  }
+
+  return isClosed;
 };
 
 // 50 sec
@@ -78,7 +90,7 @@ const common = {
         }, TIMEOUT);
       })
       .then(function () {
-        return common.switchBrowser1();
+        return common.switchToVisitor();
       })
       .then(function () {
         log.debug('document.getElementById ');
@@ -93,7 +105,7 @@ const common = {
           log.debug('precall not enabled');
           return browser.driver.wait(common.callEstablishedByChatToken(), 5000);
         } else {
-          return common.switchBrowser1()
+          return common.switchToVisitor()
             .then(function () {
               log.debug('precall enabled');
               return browser.driver.executeScript('document.getElementById(\'joinConferenceButton\').click(); ');
@@ -151,6 +163,16 @@ const common = {
       });
   },
 
+  verifyRedirection: function () {
+    return browser.driver.executeScript('return (document.URL)')
+      .then(function (result) {
+        if (result.toString().indexOf('cnn') !== -1) {
+          return true;
+        }
+        return false;
+      });
+  },
+
   establishConnection: function () {
     sessionId = getGuid();
     const str = {
@@ -169,7 +191,14 @@ const common = {
     const encodedString = Buffer.from(JSON.stringify(str)).toString('base64');
     const homeURL = config.test_env.baseURL + '/static/';
     const url = homeURL + 'popup.html?tennantId=' + Buffer.from(config.test_env.tennantId).toString('base64') + '&params=' + encodedString + '&precall=false';
-    return browser.driver.get(url)
+
+    return browser.getAllWindowHandles()
+      .then(function (handles) {
+        firstWindow = handles[0];
+        return browser.switchTo().window(firstWindow);
+      }).then(function () {
+        return browser.driver.get(url);
+      })
       .then(function () {
         browser.driver.manage().window().maximize();
       })
@@ -230,40 +259,25 @@ const common = {
         return browser.driver.wait(common.clickAgentRedButton(), 16000);
       })
       .then(function () {
-        log.debug('confirming');
+        log.debug('confirming red close button');
         return browser.driver.wait(common.confirmAgentDialog(), 30000);
       })
       .then(function () {
-        // verify initial state in agent
-        log.debug('confirmed. verify initial state in agent');
-        return browser.driver.wait(common.isPrecall(), 3000);
+        if (!isBrowserClosed) {
+          browser.driver.close();
+        }
+        return common.switchToVisitor();
       })
       .then(function () {
-        return browser.switchTo().window(firstWindow);
+        // TODO verify redirection
+        return execute('window.open()');
       })
       .then(function () {
-        return browser.driver.wait(browser.switchTo().defaultContent(), 3000);
+        return browser.driver.close();
       })
-      .then(async function () {
-        // check any ifame in visitor page
-        log.debug('check any ifame in visitor page');
-        return browser.wait(async function () {
-          return browser.driver.executeScript("return (window.document.querySelector('iframe') == null)")
-            .then(async function (result) {
-              if (result === true) {
-                log.debug('iframe removed in single button page after session termination');
-                return true;
-              }
-              log.debug('iframe still there ');
-              await browser.driver.executeScript('$("#closeVideoButton").click()');
-              return false;
-            }, function (unhandledError) {
-              return unhandledError;
-            });
-        }, TIMEOUT);
-      })
-      .then(function () {
-        return browser.driver.sleep(1000);
+      .catch(function (e) {
+        log.error(e);
+        return new Error(e);
       });
   },
 
@@ -336,8 +350,8 @@ const common = {
       });
   },
 
-  switchBrowser1: function () {
-    return browser.switchTo().window(firstWindow)
+  switchToVisitor: function () {
+    return browser.switchTo().window(firstWindow);
   },
 
   isPrecall: function () {
@@ -421,6 +435,14 @@ const common = {
       .then(function (result) {
         token = result;
         return token;
+      });
+  },
+
+  getBrokerage: function () {
+    return dbAPI.getBrokerage()
+      .then(function (result) {
+        brokerage = result;
+        return brokerage;
       });
   },
 
@@ -521,7 +543,7 @@ const common = {
   },
 
   isVisitorScreenshareOn: function () {
-    return common.switchBrowser1()
+    return common.switchToVisitor()
       .then(function () {
         return common.isAgentScreenshareOn();
       });
@@ -529,7 +551,7 @@ const common = {
 
   verifyBranding: function () {
     log.debug('verifying consent is exist');
-    return common.switchBrowser1()
+    return common.switchToVisitor()
       .then(function () {
         return browser.driver.executeScript(
           "return (document.querySelector('#consent_text_1').innerText === 'test message')")
@@ -634,7 +656,7 @@ const common = {
   },
 
   muteVisitor: function (mute) {
-    return common.switchBrowser1()
+    return common.switchToVisitor()
       .then(function () {
         return browser.driver
           .findElement(by.id('showHideAudio'))
@@ -686,11 +708,10 @@ const common = {
   },
 
   isVisitorButtonMuted: function () {
-    return common.switchBrowser1()
+    return common.switchToVisitor()
       .then(function () {
         return common.isMuted();
       });
   }
-}
-;
+};
 module.exports = common;

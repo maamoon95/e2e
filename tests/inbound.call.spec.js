@@ -15,6 +15,7 @@ describe('inbound call', function () {
   });
 
   beforeAll(function () {
+    log.info('inbound call');
     common.getToken();
   });
 

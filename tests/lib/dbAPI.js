@@ -37,13 +37,28 @@ const impersonate = function () {
     });
 };
 
-const getBrokerage = function () {
+const getBrokerageRequest = function () {
   const url = TEST_ENV.baseURL + '/api/brokerages/users/me';
   return axios.get(url, {
     headers: {
       Authorization: `bearer ${token}`
     }
   });
+};
+
+const getBrokerage = function () {
+  if (token) {
+    return getBrokerageRequest();
+  } else {
+    return impersonate()
+      .then(function () {
+        return getBrokerageRequest();
+      })
+      .catch(function (e) {
+        log.error(e.message);
+        return new Error(e);
+      });
+  }
 };
 
 const updateBrokerage = function (update) {
@@ -77,3 +92,5 @@ const updateBrokerageProfile = function (update) {
 
 module.exports.updateBrokerageProfile = updateBrokerageProfile;
 module.exports.impersonate = impersonate;
+module.exports.getBrokerage = getBrokerage;
+

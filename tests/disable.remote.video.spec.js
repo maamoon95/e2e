@@ -18,7 +18,8 @@ describe('disable remote video test', function () {
   });
 
   beforeAll(function () {
-    return common.CreateFreshDB();
+    log.info('disable remote video test');
+    // return common.CreateFreshDB();
   });
 
   it('should verify safety not enabled', function () {
