@@ -10,8 +10,14 @@ let iframeElement;
 let firstWindow;
 let secondWindow;
 let response;
-let url2;
-let url;
+let token;
+
+const getGuid = function () {
+  function s4 () {
+    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+};
 
 const isInvisible = function (element) {
   return 'return (window.getComputedStyle(' + element + ').display === "none")';
@@ -72,7 +78,7 @@ const common = {
         }, TIMEOUT);
       })
       .then(function () {
-        return common.switchBrowser1frame();
+        return common.switchBrowser1();
       })
       .then(function () {
         log.debug('document.getElementById ');
@@ -87,7 +93,7 @@ const common = {
           log.debug('precall not enabled');
           return browser.driver.wait(common.callEstablishedByChatToken(), 5000);
         } else {
-          return common.switchBrowser1frame()
+          return common.switchBrowser1()
             .then(function () {
               log.debug('precall enabled');
               return browser.driver.executeScript('document.getElementById(\'joinConferenceButton\').click(); ');
@@ -97,8 +103,14 @@ const common = {
             })
             .then(function () {
               return browser.driver.wait(common.callEstablishedByChatToken(), 5000);
+            })
+            .catch(function (e) {
+              return new Error(e);
             });
         }
+      })
+      .catch(function (e) {
+        return new Error(e);
       });
   },
 
@@ -106,8 +118,8 @@ const common = {
     log.debug('verifying customer page video streams.');
     return browser.wait(function () {
       return browser.driver.executeScript(
-        "return (window.document.querySelector('#remoteVideo') && (window.document.querySelector('#remoteVideo') != null) && (window.document.querySelector('#localVideo') && (window.document.querySelector('#localVideo') != null)))")
-        .then(async function (result) {
+        "return (window.document.querySelector('.sourcevideo') && (window.document.querySelector('.sourcevideo') != null) && (window.document.querySelector('.localvideo') && (window.document.querySelector('.localvideo') != null)))")
+        .then(function (result) {
           if (result) {
             log.debug('customer page video verificiation succeed');
             return true;
@@ -140,19 +152,28 @@ const common = {
   },
 
   establishConnection: function () {
-    url = 'http://localhost:3000/single-button-genesys-demo.html?debug=' + config.env;
+    sessionId = getGuid();
+    const str = {
+      video_on: true,
+      sessionId: sessionId,
+      hideChat: true,
+      type: 'initial',
+      defaultGroup: 'floor',
+      view_widget: '4',
+      offline: true,
+      aa: true,
+      skip_private: true,
+      inichat: 'false'
+    };
+
+    const encodedString = Buffer.from(JSON.stringify(str)).toString('base64');
+    const homeURL = config.test_env.baseURL + '/static/';
+    const url = homeURL + 'popup.html?tennantId=' + Buffer.from(config.test_env.tennantId).toString('base64') + '&params=' + encodedString + '&precall=false';
     return browser.driver.get(url)
       .then(function () {
         browser.driver.manage().window().maximize();
-        return browser.driver.executeScript("CXBus.command('VideoEngager.startVideoEngager')");
       })
       .then(function () {
-        return browser.driver.wait(common.iframeCreated(), 3000);
-      })
-      .then(function () {
-        return browser.switchTo().frame(iframeElement);
-      })
-      .then(async function () {
         return browser.executeScript('window.open()');
       })
       .then(function () {
@@ -164,7 +185,13 @@ const common = {
         return browser.switchTo().window(secondWindow);
       })
       .then(function () {
-        url2 = config.test_env.baseURL + '/static/agent.popup.cloud.html';
+        const url2 = config.test_env.baseURL + '/static/agent.popup.cloud.html';
+        /*
+        url2 += '?params=eyJsb2NhbGUiOiJlbl9VUyJ9&interaction=1';
+        url2 += '&token=' + token;
+        url2 += '&invitationId=' + sessionId;
+        url2 += '&sk=true';
+        */
         return browser.get(url2);
       })
       .then(function () {
@@ -188,6 +215,9 @@ const common = {
               return false;
             });
         }, TIMEOUT);
+      })
+      .catch(function (e) {
+        return new Error(e);
       });
   },
 
@@ -306,6 +336,10 @@ const common = {
       });
   },
 
+  switchBrowser1: function () {
+    return browser.switchTo().window(firstWindow)
+  },
+
   isPrecall: function () {
     return browser.driver
       .findElement(by.id('videoPreview'))
@@ -379,6 +413,14 @@ const common = {
         return true;
       }, function (unhandledError) {
         return unhandledError;
+      });
+  },
+
+  getToken: function () {
+    return dbAPI.impersonate()
+      .then(function (result) {
+        token = result;
+        return token;
       });
   },
 
@@ -479,7 +521,7 @@ const common = {
   },
 
   isVisitorScreenshareOn: function () {
-    return common.switchBrowser1frame()
+    return common.switchBrowser1()
       .then(function () {
         return common.isAgentScreenshareOn();
       });
@@ -487,7 +529,7 @@ const common = {
 
   verifyBranding: function () {
     log.debug('verifying consent is exist');
-    return common.switchBrowser1frame()
+    return common.switchBrowser1()
       .then(function () {
         return browser.driver.executeScript(
           "return (document.querySelector('#consent_text_1').innerText === 'test message')")
@@ -592,7 +634,7 @@ const common = {
   },
 
   muteVisitor: function (mute) {
-    return common.switchBrowser1frame()
+    return common.switchBrowser1()
       .then(function () {
         return browser.driver
           .findElement(by.id('showHideAudio'))
@@ -644,7 +686,7 @@ const common = {
   },
 
   isVisitorButtonMuted: function () {
-    return common.switchBrowser1frame()
+    return common.switchBrowser1()
       .then(function () {
         return common.isMuted();
       });

@@ -54,8 +54,8 @@ describe('Main View', function () {
     const email = element(by.id('email'));
     const password = element(by.id('password'));
     const loginButton = element(by.id('signin'));
-    await email.sendKeys('t@t');
-    await password.sendKeys('1');
+    await email.sendKeys(config.test_env.email);
+    await password.sendKeys(config.test_env.password);
     await loginButton.click();
     await browser.driver.sleep(1000);
     expect(browser.getCurrentUrl()).toEqual(config.test_env.baseURL + '/static/dashboard.html');

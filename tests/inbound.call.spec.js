@@ -9,13 +9,13 @@ log.init(config.logger);
 
 const TIMEOUT = 1000 * 5 * 10; // 50 sec
 
-describe('single page demo', function () {
-  afterEach(async function () {
-    await browser.driver.sleep(500);
+describe('inbound call', function () {
+  afterEach(function () {
+    // empty
   });
 
   beforeAll(function () {
-    // empty
+    common.getToken();
   });
 
   beforeEach(function () {
