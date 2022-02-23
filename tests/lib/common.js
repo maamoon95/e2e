@@ -384,7 +384,6 @@ const common = {
           if (result === true) {
             return true;
           }
-          log.debug('callEstablishedByChatToken ' + result);
           return false;
         }, function (err) {
           log.debug(err);
@@ -448,6 +447,10 @@ const common = {
 
   setSafety: function (enable, disableRemoteCamera) {
     return dbAPI.updateBrokerageProfile({ safety: { enable: enable, disableRemoteCamera: disableRemoteCamera } });
+  },
+
+  setBlur: function (blur) {
+    return dbAPI.updateBrokerageProfile({ branding: { buttons: { 'wd-v-blur': blur } } });
   },
 
   /**
@@ -519,21 +522,11 @@ const common = {
   },
 
   setAgentScreenshare: function (screenshare) {
-    /*
-    return Brokerage.brokerageFindByEmail('t@t')
-      .then(function (brokerage) {
-        return brokerage.saveBrokerage({ branding: { agentScreenShareControl: screenshare } });
-      });
-      */
+    return dbAPI.updateBrokerageProfile({ branding: { agentScreenShareControl: screenshare } });
   },
 
   setVisitorScreenshare: function (screenshare) {
-    /*
-    return Brokerage.brokerageFindByEmail('t@t')
-      .then(function (brokerage) {
-        return brokerage.saveBrokerage({ branding: { visitorScreenShareControl: screenshare } });
-      });
-      */
+    return dbAPI.updateBrokerageProfile({ branding: { visitorScreenShareControl: screenshare } });
   },
 
   isAgentScreenshareOn: function () {
@@ -583,30 +576,15 @@ const common = {
   },
 
   enableConsent: function () {
-    /*
-    return Brokerage.brokerageFindByEmail('t@t')
-      .then(function (brokerage) {
-        return brokerage.saveBrokerage({ branding: { privacy: { enable: true, endUserConsent: { text: { en_US: 'test message' } } } } });
-      });
-      */
+    return dbAPI.updateBrokerageProfile({ branding: { privacy: { enable: true, endUserConsent: { text: { en_US: 'test message' } } } } });
   },
 
   disableConsent: function () {
-    /*
-    return Brokerage.brokerageFindByEmail('t@t')
-      .then(function (brokerage) {
-        return brokerage.saveBrokerage({ branding: { privacy: { enable: false } } });
-      });
-      */
+    return dbAPI.updateBrokerageProfile({ branding: { privacy: { enable: false } } });
   },
 
   removeConsent: function () {
-    /*
-    return Brokerage.brokerageFindByEmail('t@t')
-      .then(function (brokerage) {
-        return brokerage.saveBrokerage({ branding: { privacy: {} } });
-      });
-      */
+    return dbAPI.updateBrokerageProfile({ branding: { privacy: {} } });
   },
 
   isBlurOn: function () {
@@ -618,15 +596,6 @@ const common = {
       }, function (unhandledError) {
         return unhandledError;
       });
-  },
-
-  setBlur: function (blur) {
-    /*
-    return Brokerage.brokerageFindByEmail('t@t')
-      .then(function (brokerage) {
-        return brokerage.saveBrokerage({ branding: { buttons: { 'wd-v-blur': blur } } });
-      });
-      */
   },
 
   muteAgent: function (mute) {
@@ -658,29 +627,41 @@ const common = {
   muteVisitor: function (mute) {
     return common.switchToVisitor()
       .then(function () {
-        return browser.driver
-          .findElement(by.id('showHideAudio'))
-          .then(function (muteBtn) {
-            return muteBtn.getAttribute('class')
-              .then(function (val) {
-                if (val.indexOf('wd-v-nosound') !== -1) {
-                  if (!mute) {
-                    muteBtn.click();
-                  } else {
-                    log.debug('already muted');
+        return browser.driver.wait(function () {
+          return browser.driver
+            .findElement(by.id('showHideAudio'))
+            .then(function (muteBtn) {
+              if (!muteBtn) {
+                return false;
+              }
+              return muteBtn.getAttribute('class')
+                .then(function (val) {
+                  if (!val) {
+                    return false;
                   }
-                }
-                if (val.indexOf('wd-v-sound') !== -1) {
-                  if (!mute) {
-                    log.debug('already muted');
-                  } else {
-                    muteBtn.click();
+                  if (val.indexOf('wd-v-nosound') !== -1) {
+                    if (!mute) {
+                      muteBtn.click();
+                    } else {
+                      log.debug('already muted');
+                    }
                   }
-                }
-              });
-          }, function (unhandledError) {
-            return unhandledError;
-          });
+                  if (val.indexOf('wd-v-sound') !== -1) {
+                    if (!mute) {
+                      log.debug('already muted');
+                    } else {
+                      muteBtn.click();
+                    }
+                  }
+                  return true;
+                });
+            }, function (unhandledError) {
+              return false;
+            })
+            .catch(function () {
+              return false;
+            });
+        });
       });
   },
 
