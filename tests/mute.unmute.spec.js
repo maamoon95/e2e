@@ -18,14 +18,14 @@ describe('disable remote video test', function () {
   });
 
   beforeAll(function () {
-    return common.CreateFreshDB();
+    common.getToken();
   });
 
   it('should mute and unmute agent', function () {
-    common.establishConnection()
+    common.establishInboundConnection(true, false)
       .then(function () {
         log.debug('join Call');
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         log.debug('validate Connection');
@@ -56,10 +56,10 @@ describe('disable remote video test', function () {
   });
 
   it('should mute and unmute visitor', function () {
-    common.establishConnection()
+    common.establishInboundConnection(true, false)
       .then(function () {
         log.debug('join Call');
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         log.debug('validate Connection');

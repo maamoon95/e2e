@@ -19,19 +19,19 @@ describe('disable remote video test', function () {
 
   beforeAll(function () {
     log.info('disable remote video test');
-    // return common.CreateFreshDB();
+    common.getToken();
   });
 
   it('should verify safety not enabled', function () {
     return common.setSafety(false, true)
       .then(function (profile) {
-        assert.equal(false, profile.data.safety.enable);
+        assert.equal(false, profile.data.safety.enable, 'db is not changed');
         log.debug('Establish Connection');
-        return common.establishConnection();
+        return common.establishInboundConnection(true, false);
       })
       .then(function () {
         log.debug('join Call');
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         log.debug('validate Connection');
@@ -42,7 +42,7 @@ describe('disable remote video test', function () {
         return common.isSafetyDisabled();
       })
       .then(function (buttonDiasabled) {
-        assert.equal(true, buttonDiasabled);
+        assert.equal(true, buttonDiasabled, 'safety button is visible');
         return common.finishCall();
       })
       .catch(function (e) {
@@ -55,11 +55,11 @@ describe('disable remote video test', function () {
     return common.setSafety(true, true)
       .then(function () {
         log.debug('Establish Connection');
-        return common.establishConnection();
+        return common.establishInboundConnection(true, false);
       })
       .then(function () {
         log.debug('join Call');
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         log.debug('validate Connection');

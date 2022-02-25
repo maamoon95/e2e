@@ -1,8 +1,9 @@
 /* global by */
-const { browser } = require('protractor');
+const { browser, by, element } = require('protractor');
 const log = require('./logger');
 const dbAPI = require('./dbAPI');
 const config = require('./config');
+const assert = require('assert');
 log.init(config.logger);
 
 let sessionId;
@@ -12,6 +13,81 @@ let secondWindow;
 let response;
 let token;
 let brokerage;
+
+/**
+ *
+ * @param {start with video} video_on
+ * @param {start with precall} precall
+ * @returns
+ */
+const startVisitor = function (video_on) {
+  sessionId = getGuid();
+  const str = {
+    video_on: video_on,
+    sessionId: sessionId,
+    hideChat: true,
+    type: 'initial',
+    defaultGroup: 'floor',
+    view_widget: '4',
+    offline: true,
+    aa: true,
+    skip_private: true,
+    inichat: 'false'
+  };
+
+  const encodedString = Buffer.from(JSON.stringify(str)).toString('base64');
+  const homeURL = config.test_env.baseURL + '/static/';
+  const url = homeURL + 'popup.html?tennantId=' + Buffer.from(config.test_env.tennantId).toString('base64') + '&params=' + encodedString;
+  log.debug('loading url: ', url);
+  return browser.driver.get(url);
+};
+
+const prepateSecondTab = function () {
+  return browser.executeScript('window.open()')
+    .then(function () {
+      return browser.getAllWindowHandles();
+    })
+    .then(function (handles) {
+      firstWindow = handles[0];
+      secondWindow = handles[1];
+      return browser.switchTo().window(secondWindow);
+    });
+};
+
+const startAgentFromConsole = function () {
+  const url = config.test_env.baseURL + '/static/agent.popup.cloud.html';
+  return browser.get(url)
+    .then(function () {
+      return execute('window.jsVeInitClb = function () {_videoengager.startVideoVisitor("' + sessionId + '");} ');
+    })
+    .then(function () {
+      return execute('_videoengager.init({\'pak\':"' + config.test_env.pak + '", \'externalId\':"' + config.test_env.externalId + '"}, {\'firstName\':\'' + config.test_env.firstName + '\', \'lastName\':\'' + config.test_env.lastName + '\', \'email\': \'' + config.test_env.email + '\', \'userName\': \'t\'}, {\'firstName\':\'asd\', \'lastName\':\'last\', \'email\': \'t@t\', \'id\': \'123\', \'subject\': \'subj\'},{\'hideChat\': true, \'hideInfo\': true});');
+    });
+};
+
+const startAgentFromURL = function () {
+  let url = config.test_env.baseURL + '/static/agent.popup.cloud.html';
+  url += '?params=eyJsb2NhbGUiOiJlbl9VUyJ9&interaction=1';
+  url += '&token=' + token;
+  url += '&invitationId=' + sessionId;
+  url += '&sk=true';
+  return browser.get(url);
+};
+
+const restartBrowser = async function () {
+  await browser.executeScript('window.open()');
+  const handles = await browser.getAllWindowHandles();
+  for (let i = 0; i < handles.length - 1; i++) {
+    try {
+      await browser.switchTo().window(handles[i]);
+      await browser.driver.close();
+    } catch (error) {
+      log.error('frame already closed');
+    }
+  }
+  await browser.switchTo().window(handles[handles.length - 1]);
+  return browser.driver.sleep(100);
+};
 
 const getGuid = function () {
   function s4 () {
@@ -36,8 +112,19 @@ const execute = function (str) {
       }
       return false;
     }, function (err) {
+      assert.ifError(err);
+      return err;
+    })
+    .catch(function (err) {
+      assert.ifError(err);
       return err;
     });
+};
+
+const wait = function (callback, timeout, str) {
+  return browser.driver.wait(function () {
+    return callback;
+  }, timeout, str);
 };
 
 const switchToAgent = function () {
@@ -55,6 +142,54 @@ const isBrowserClosed = function (browser) {
   return isClosed;
 };
 
+const verifyAgentPushConnection = function () {
+  return wait(execute("return (typeof window.getVeContext().ang === 'object')"), 5000, 'push bundle should be connected within 5 seconds');
+};
+
+const verifyAgentPrecall = function () {
+  return browser.wait(function () {
+    return browser.driver.executeScript('return (window.getVeContext().videoCurrent != undefined)')
+      .then(function (result) {
+        if (result) {
+          log.debug('videoCurrent ' + result);
+          return true;
+        }
+        return false;
+      }, function (unhandledError) {
+        return unhandledError;
+      });
+  }, TIMEOUT)
+    .then(function () {
+      return browser.wait(function () {
+        return browser.driver.executeScript('return (window.getVeContext().audioOutputSelect != undefined)')
+          .then(function (result) {
+            if (result) {
+              return true;
+            }
+            log.debug('audioOutputSelect ' + result);
+            return false;
+          }, function (unhandledError) {
+            return unhandledError;
+          });
+      }, TIMEOUT);
+    });
+};
+
+const verifyAgentConnected = function () {
+  return wait(common.callEstablishedByChatToken(), 5000);
+};
+
+const isCustomerPrecall = function () {
+  return common.switchToVisitor()
+    .then(function () {
+      return execute('return (document.getElementById(\'joinConferenceButton\') !== null)');
+    })
+    .catch(function (e) {
+      assert.ifError(e);
+      return new Error(e);
+    });
+};
+
 // 50 sec
 const TIMEOUT = 50000;
 
@@ -62,66 +197,36 @@ const common = {
   sleep: function (time) {
     return browser.driver.sleep(time);
   },
-  joinCall: function () {
-    return browser.wait(function () {
-      return browser.driver.executeScript('return (window.getVeContext().videoCurrent != undefined)')
-        .then(async function (result) {
-          if (result) {
-            log.debug('videoCurrent ' + result);
-            return true;
-          }
-          return false;
-        }, function (unhandledError) {
-          return unhandledError;
-        });
-    }, TIMEOUT)
+
+  joinVisitorPrecall: function () {
+    return common.switchToVisitor()
       .then(function () {
-        return browser.wait(function () {
-          return browser.driver.executeScript('return (window.getVeContext().audioOutputSelect != undefined)')
-            .then(async function (result) {
-              if (result) {
-                return true;
-              }
-              log.debug('audioOutputSelect ' + result);
-              return false;
-            }, function (unhandledError) {
-              return unhandledError;
-            });
-        }, TIMEOUT);
+        return browser.driver.findElement(by.id('joinConferenceButton'));
       })
+      .then(function (element) {
+        assert.ok(element, 'precall join button is not exist');
+        return execute('document.getElementById(\'joinConferenceButton\').click();');
+      })
+      .catch(function (e) {
+        assert.ifError(e);
+        return (e);
+      });
+  },
+
+  verifyJoinWithoutPrecall: function () {
+    return isCustomerPrecall()
       .then(function () {
-        return common.switchToVisitor();
-      })
-      .then(function () {
-        log.debug('document.getElementById ');
-        return browser.driver.executeScript('return (document.getElementById(\'joinConferenceButton\') === null)');
-      })
-      .then(function (res) {
-        response = res;
-        return browser.switchTo().window(secondWindow);
-      })
-      .then(async function () {
-        if (response) {
+        if (!response) {
           log.debug('precall not enabled');
-          return browser.driver.wait(common.callEstablishedByChatToken(), 5000);
+          return verifyAgentConnected();
         } else {
-          return common.switchToVisitor()
-            .then(function () {
-              log.debug('precall enabled');
-              return browser.driver.executeScript('document.getElementById(\'joinConferenceButton\').click(); ');
-            })
-            .then(function () {
-              return browser.switchTo().window(secondWindow);
-            })
-            .then(function () {
-              return browser.driver.wait(common.callEstablishedByChatToken(), 5000);
-            })
-            .catch(function (e) {
-              return new Error(e);
-            });
+          const errStr = 'visitor should not be in precall';
+          assert.equal(false, response, errStr);
+          return new Error(errStr);
         }
       })
       .catch(function (e) {
+        assert.ifError(e);
         return new Error(e);
       });
   },
@@ -130,7 +235,15 @@ const common = {
     log.debug('verifying customer page video streams.');
     return browser.wait(function () {
       return browser.driver.executeScript(
-        "return (window.document.querySelector('.sourcevideo') && (window.document.querySelector('.sourcevideo') != null) && (window.document.querySelector('.localvideo') && (window.document.querySelector('.localvideo') != null)))")
+        "return window.document.querySelector('.sourcevideo') " +
+        "&& window.document.querySelector('.sourcevideo').srcObject " +
+        "&& window.document.querySelector('.sourcevideo').srcObject.getVideoTracks " +
+        "&& (window.document.querySelector('.sourcevideo').srcObject.getVideoTracks().length === 1) " +
+        "&& window.document.querySelector('.localvideo') " +
+        "&& window.document.querySelector('.localvideo').srcObject " +
+        "&& window.document.querySelector('.localvideo').srcObject.getVideoTracks " +
+        "&& (window.document.querySelector('.localvideo').srcObject.getVideoTracks().length === 1) "
+      )
         .then(function (result) {
           if (result) {
             log.debug('customer page video verificiation succeed');
@@ -140,7 +253,7 @@ const common = {
         }, function (unhandledError) {
           return unhandledError;
         });
-    }, TIMEOUT)
+    }, 5 * 1000, 'video should start in 5 seconds')
       .then(function () {
         // verify visitor page video - should connect in 15 sec
         log.debug('verifying agent page video streams.');
@@ -148,7 +261,10 @@ const common = {
           .then(function () {
             return browser.wait(function () {
               return browser.driver.executeScript(
-                "return (window.document.querySelector('.sourcevideo') && (window.document.querySelector('.sourcevideo') != null) && (window.document.querySelector('.localvideo') && (window.document.querySelector('.localvideo') != null)))")
+                "return (window.document.querySelector('.sourcevideo') " +
+                "&& (window.document.querySelector('.sourcevideo') != null) " ^
+                "&& (window.document.querySelector('.localvideo') " +
+                "&& (window.document.querySelector('.localvideo') != null)))")
                 .then(function (result) {
                   if (result) {
                     log.debug('agent page video verificiation succeed');
@@ -173,79 +289,22 @@ const common = {
       });
   },
 
-  establishConnection: function () {
-    sessionId = getGuid();
-    const str = {
-      video_on: true,
-      sessionId: sessionId,
-      hideChat: true,
-      type: 'initial',
-      defaultGroup: 'floor',
-      view_widget: '4',
-      offline: true,
-      aa: true,
-      skip_private: true,
-      inichat: 'false'
-    };
-
-    const encodedString = Buffer.from(JSON.stringify(str)).toString('base64');
-    const homeURL = config.test_env.baseURL + '/static/';
-    const url = homeURL + 'popup.html?tennantId=' + Buffer.from(config.test_env.tennantId).toString('base64') + '&params=' + encodedString + '&precall=false';
-
-    return browser.getAllWindowHandles()
-      .then(function (handles) {
-        firstWindow = handles[0];
-        return browser.switchTo().window(firstWindow);
-      }).then(function () {
-        return browser.driver.get(url);
+  establishInboundConnection: function (videoOn) {
+    return browser.driver.manage().window().maximize()
+      .then(function () {
+        startVisitor(videoOn);
       })
       .then(function () {
-        browser.driver.manage().window().maximize();
+        return prepateSecondTab();
       })
       .then(function () {
-        return browser.executeScript('window.open()');
+        return startAgentFromConsole();
       })
       .then(function () {
-        return browser.getAllWindowHandles();
-      })
-      .then(function (handles) {
-        firstWindow = handles[0];
-        secondWindow = handles[1];
-        return browser.switchTo().window(secondWindow);
-      })
-      .then(function () {
-        const url2 = config.test_env.baseURL + '/static/agent.popup.cloud.html';
-        /*
-        url2 += '?params=eyJsb2NhbGUiOiJlbl9VUyJ9&interaction=1';
-        url2 += '&token=' + token;
-        url2 += '&invitationId=' + sessionId;
-        url2 += '&sk=true';
-        */
-        return browser.get(url2);
-      })
-      .then(function () {
-        return browser.driver.executeScript('window.jsVeInitClb = function () {_videoengager.startVideoVisitor("' + sessionId + '");} ');
-      })
-      .then(function () {
-        return browser.driver.executeScript('_videoengager.init({\'pak\':"' + config.test_env.pak + '", \'externalId\':"' + config.test_env.externalId + '"}, {\'firstName\':\'' + config.test_env.firstName + '\', \'lastName\':\'' + config.test_env.lastName + '\', \'email\': \'' + config.test_env.email + '\', \'userName\': \'t\'}, {\'firstName\':\'asd\', \'lastName\':\'last\', \'email\': \'t@t\', \'id\': \'123\', \'subject\': \'subj\'},{\'hideChat\': true, \'hideInfo\': true});');
-      })
-      .then(function () {
-        log.debug('Waiting page push bundle connection');
-        return browser.wait(function () {
-          return browser.driver.executeScript("return (typeof window.getVeContext().ang === 'object')")
-            .then(function (result) {
-              if (result === true) {
-                log.debug('page installed push bundle');
-                return true;
-              }
-              return false;
-            }, function (err) {
-              log.debug(err);
-              return false;
-            });
-        }, TIMEOUT);
+        return verifyAgentPushConnection();
       })
       .catch(function (e) {
+        assert.ifError(e);
         return new Error(e);
       });
   },
@@ -263,84 +322,25 @@ const common = {
         return browser.driver.wait(common.confirmAgentDialog(), 30000);
       })
       .then(function () {
-        if (!isBrowserClosed) {
-          browser.driver.close();
-        }
         return common.switchToVisitor();
       })
       .then(function () {
         // TODO verify redirection
-        return execute('window.open()');
-      })
-      .then(function () {
-        return browser.driver.close();
+        return restartBrowser();
       })
       .catch(function (e) {
-        log.error(e);
+        assert.ifError(e);
         return new Error(e);
       });
   },
 
-  CreateFreshDB: function () {
-    console.log('create fresh db');
-    /*
-    return Brokerage.deleteMany({}).exec()
-      .then(function () {
-        return Partner.deleteMany({}).exec();
-      })
-      .then(function () {
-        return User.deleteMany({}).exec();
-      })
-      .then(function () {
-        return Acl.deleteMany({}).exec();
-      })
-      .then(function () {
-        const acl = new Acl({ name: 'manager' });
-        return Q.ninvoke(acl, 'save');
-      })
-      .then(function () {
-        const acl = new Acl({ name: 'agent' });
-        return Q.ninvoke(acl, 'save');
-      })
-      .then(function () {
-        return Brokerage.deleteMany().exec();
-      })
-      .then(function () {
-        return Brokerage.createBrokerage({
-          firstName: 'NO_C',
-          lastName: 'NO_C',
-          email: 't@t',
-          password: '1',
-          company: 'The Brokerage',
-          tennantId: 'test_tenant',
-          startWidget: true,
-          startThreeWayCall: true,
-          profiles: {
-            mobile_web_profile: {
-              startWidget: false
-            }
-          }
-        });
-      })
-      .then(function (brokerage) {
-        Partner.create({
-          PAK: 'DEV2',
-          company: 'videoEngager',
-          firstName: 'tester',
-          lastName: '',
-          active: true,
-          agents: [],
-          brokerage: [{
-            externalId: 'videoEngager',
-            tennantId: 'test_tenant',
-            emails: [{
-              email: brokerage._account.email,
-              id: brokerage._account._id
-            }]
-          }]
-        });
+  terminateCall: function () {
+    log.debug('terminate all windows');
+    return restartBrowser()
+      .catch(function (e) {
+        assert.ifError(e);
+        return new Error(e);
       });
-      */
   },
 
   switchBrowser1frame: function () {
@@ -378,18 +378,23 @@ const common = {
   },
 
   callEstablishedByChatToken: function () {
-    return browser.wait(async function () {
-      return browser.driver.executeScript('return (window.getVeContext().chat_token != null)')
-        .then(function (result) {
-          if (result === true) {
-            return true;
-          }
-          return false;
-        }, function (err) {
-          log.debug(err);
-          return err;
-        });
-    }, TIMEOUT);
+    return switchToAgent()
+      .then(function () {
+        log.debug('switching to agent tab');
+        return browser.wait(async function () {
+          return browser.driver.executeScript('return (window.getVeContext().chat_token != null)')
+            .then(function (result) {
+              if (result === true) {
+                return true;
+              }
+              return false;
+            }, function (err) {
+              log.debug(err);
+              assert.ifError(err, 'agent chat token not found');
+              return err;
+            });
+        }, TIMEOUT);
+      });
   },
 
   iframeCreated: function () {
@@ -443,6 +448,10 @@ const common = {
         brokerage = result;
         return brokerage;
       });
+  },
+
+  setPrecall: function (enable) {
+    return dbAPI.updateBrokerageProfile({ branding: { visitorShowPrecall: enable } });
   },
 
   setSafety: function (enable, disableRemoteCamera) {

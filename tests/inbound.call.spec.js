@@ -27,10 +27,10 @@ describe('inbound call', function () {
   // single page demo
   it('should establish the call and finish the call', function () {
     log.debug('Establish Connection');
-    return common.establishConnection()
+    return common.establishInboundConnection(true, false)
       .then(function () {
         log.debug('join Call');
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         log.debug('validate Connection');
@@ -42,7 +42,7 @@ describe('inbound call', function () {
       })
       .catch(function (e) {
         assert.ifError(e);
-        return common.finishCall();
+        return common.terminateCall();
       });
   });
 }, TIMEOUT);

@@ -20,16 +20,16 @@ describe('blur settings test', function () {
   });
 
   beforeAll(function () {
-    //
+    common.getToken();
   });
 
   it('enable consent text', function () {
     return common.enableConsent()
       .then(function () {
-        return common.establishConnection();
+        return common.establishInboundConnection(true, false);
       })
       .then(function () {
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         return common.validateConnection();
@@ -50,10 +50,10 @@ describe('blur settings test', function () {
   it('disable consent text', function () {
     return common.disableConsent()
       .then(function () {
-        return common.establishConnection();
+        return common.establishInboundConnection(true, false);
       })
       .then(function () {
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         return common.validateConnection();
@@ -74,10 +74,10 @@ describe('blur settings test', function () {
   it('remove consent', function () {
     return common.removeConsent()
       .then(function () {
-        return common.establishConnection();
+        return common.establishInboundConnection(true, false);
       })
       .then(function () {
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         return common.validateConnection();

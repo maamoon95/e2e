@@ -20,18 +20,18 @@ describe('blur settings test', function () {
   });
 
   beforeAll(function () {
-    //
+    common.getToken();
   });
 
   it('should enable blur', function () {
     return common.setBlur(true)
       .then(function () {
         log.debug('Establish Connection');
-        return common.establishConnection();
+        return common.establishInboundConnection(true, false);
       })
       .then(function () {
         log.debug('join Call');
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         log.debug('validate Connection');
@@ -57,11 +57,11 @@ describe('blur settings test', function () {
     return common.setBlur(false)
       .then(function () {
         log.debug('Establish Connection');
-        return common.establishConnection();
+        return common.establishInboundConnection(true, false);
       })
       .then(function () {
         log.debug('join Call');
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         log.debug('validate Connection');
@@ -87,11 +87,11 @@ describe('blur settings test', function () {
     return common.setBlur()
       .then(function () {
         log.debug('Establish Connection');
-        return common.establishConnection();
+        return common.establishInboundConnection(true, false);
       })
       .then(function () {
         log.debug('join Call');
-        return common.joinCall();
+        return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
         log.debug('validate Connection');
