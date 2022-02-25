@@ -20,7 +20,11 @@ describe('blur settings test', function () {
   });
 
   beforeAll(function () {
-    common.getToken();
+    log.info('blur settings test');
+    return common.getToken()
+      .then(function () {
+        return common.setDefaultDB();
+      });
   });
 
   it('should enable blur', function () {

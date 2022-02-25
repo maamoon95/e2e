@@ -42,7 +42,19 @@ const startVisitor = function (video_on) {
   return browser.driver.get(url);
 };
 
-const prepateSecondTab = function () {
+const errorHandler = function (e) {
+  assert.ifError(e);
+  return new Error(e);
+};
+
+const startVisitorByURL = function (url) {
+  return common.switchToVisitor()
+    .then(function () {
+      return browser.driver.get(url);
+    });
+};
+
+const prepareSecondTab = function (switch_) {
   return browser.executeScript('window.open()')
     .then(function () {
       return browser.getAllWindowHandles();
@@ -50,6 +62,10 @@ const prepateSecondTab = function () {
     .then(function (handles) {
       firstWindow = handles[0];
       secondWindow = handles[1];
+      if (switch_) {
+        firstWindow = handles[1];
+        secondWindow = handles[0];
+      }
       return browser.switchTo().window(secondWindow);
     });
 };
@@ -60,6 +76,14 @@ const startAgentFromConsole = function () {
     .then(function () {
       return execute('window.jsVeInitClb = function () {_videoengager.startVideoVisitor("' + sessionId + '");} ');
     })
+    .then(function () {
+      return execute('_videoengager.init({\'pak\':"' + config.test_env.pak + '", \'externalId\':"' + config.test_env.externalId + '"}, {\'firstName\':\'' + config.test_env.firstName + '\', \'lastName\':\'' + config.test_env.lastName + '\', \'email\': \'' + config.test_env.email + '\', \'userName\': \'t\'}, {\'firstName\':\'asd\', \'lastName\':\'last\', \'email\': \'t@t\', \'id\': \'123\', \'subject\': \'subj\'},{\'hideChat\': true, \'hideInfo\': true});');
+    });
+};
+
+const startAgent = function () {
+  const url = config.test_env.baseURL + '/static/agent.popup.cloud.html';
+  return browser.get(url)
     .then(function () {
       return execute('_videoengager.init({\'pak\':"' + config.test_env.pak + '", \'externalId\':"' + config.test_env.externalId + '"}, {\'firstName\':\'' + config.test_env.firstName + '\', \'lastName\':\'' + config.test_env.lastName + '\', \'email\': \'' + config.test_env.email + '\', \'userName\': \'t\'}, {\'firstName\':\'asd\', \'lastName\':\'last\', \'email\': \'t@t\', \'id\': \'123\', \'subject\': \'subj\'},{\'hideChat\': true, \'hideInfo\': true});');
     });
@@ -91,17 +115,17 @@ const restartBrowser = async function () {
 
 const getGuid = function () {
   function s4 () {
-    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    return Math.floor((1 + Math.random()) * 0x5000).toString(16).substring(1);
   }
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 };
 
 const isInvisible = function (element) {
-  return 'return (window.getComputedStyle(' + element + ').display === "none")';
+  return '(window.getComputedStyle(' + element + ').display === "none")';
 };
 
 const isVisible = function (element) {
-  return 'return !(window.getComputedStyle(' + element + ').display === "none")';
+  return '!(window.getComputedStyle(' + element + ').display === "none")';
 };
 
 const execute = function (str) {
@@ -111,14 +135,8 @@ const execute = function (str) {
         return true;
       }
       return false;
-    }, function (err) {
-      assert.ifError(err);
-      return err;
     })
-    .catch(function (err) {
-      assert.ifError(err);
-      return err;
-    });
+    .catch(errorHandler);
 };
 
 const wait = function (callback, timeout, str) {
@@ -128,6 +146,7 @@ const wait = function (callback, timeout, str) {
 };
 
 const switchToAgent = function () {
+  log.debug('switching to agent tab');
   return browser.switchTo().window(secondWindow);
 };
 
@@ -142,41 +161,28 @@ const isBrowserClosed = function (browser) {
   return isClosed;
 };
 
+const waitCondition = function (condition, errorMessage) {
+  return browser.driver.wait(function () {
+    return browser.driver.executeScript('return (' + condition + ')');
+  }, TIMEOUT, errorMessage);
+};
+
 const verifyAgentPushConnection = function () {
-  return wait(execute("return (typeof window.getVeContext().ang === 'object')"), 5000, 'push bundle should be connected within 5 seconds');
+  return switchToAgent()
+    .then(function () {
+      return waitCondition('typeof window.getVeContext().ang === "object"', 'push bundle should be connected within 5 seconds');
+    });
 };
 
 const verifyAgentPrecall = function () {
-  return browser.wait(function () {
-    return browser.driver.executeScript('return (window.getVeContext().videoCurrent != undefined)')
-      .then(function (result) {
-        if (result) {
-          log.debug('videoCurrent ' + result);
-          return true;
-        }
-        return false;
-      }, function (unhandledError) {
-        return unhandledError;
-      });
-  }, TIMEOUT)
+  return waitCondition('window.getVeContext().videoSelect !== undefined', 'AgentPrecall videoSelect not available')
     .then(function () {
-      return browser.wait(function () {
-        return browser.driver.executeScript('return (window.getVeContext().audioOutputSelect != undefined)')
-          .then(function (result) {
-            if (result) {
-              return true;
-            }
-            log.debug('audioOutputSelect ' + result);
-            return false;
-          }, function (unhandledError) {
-            return unhandledError;
-          });
-      }, TIMEOUT);
+      return waitCondition('window.getVeContext().audioOutputSelect !== undefined', 'AgentPrecall audioOutputSelect not available');
     });
 };
 
 const verifyAgentConnected = function () {
-  return wait(common.callEstablishedByChatToken(), 5000);
+  return common.callEstablishedByChatToken();
 };
 
 const isCustomerPrecall = function () {
@@ -184,14 +190,58 @@ const isCustomerPrecall = function () {
     .then(function () {
       return execute('return (document.getElementById(\'joinConferenceButton\') !== null)');
     })
-    .catch(function (e) {
-      assert.ifError(e);
-      return new Error(e);
-    });
+    .catch(errorHandler);
 };
 
-// 50 sec
-const TIMEOUT = 50000;
+const clickWhenExist = function (selector) {
+  return browser.driver.wait(function () {
+    return browser.driver.executeScript('return (document.querySelector("' + selector + '") !== null)')
+      .then(function (res) {
+        return res;
+      });
+  }, 5000, 'button is not available within 5 seconds')
+    .then(function () {
+      return browser.driver.sleep(500);
+    })
+    .then(function () {
+      return execute('document.querySelector("' + selector + '").click();');
+    })
+    .catch(errorHandler);
+};
+
+const clickAgentVideoChat = function () {
+  return switchToAgent()
+    .then(function () {
+      return browser.driver.wait(function () {
+        return browser.driver.executeScript('return (document.querySelector("button#startVideoButton.button") !== null)')
+          .then(function (res) {
+            return res;
+          });
+      }, 5000, 'load agent precall btn within 5 seconds');
+    })
+    .then(function () {
+      return browser.driver.sleep(500);
+    })
+    .then(function () {
+      return execute('document.querySelector("button#startVideoButton.button").click();');
+    })
+    .catch(errorHandler);
+};
+
+const getVisitorShortUrl = function () {
+  return switchToAgent()
+    .then(function () {
+      return browser.driver.wait(function () {
+        return browser.driver.executeScript('return (window.getVeContext().cloudUrl)')
+          .then(function (res) {
+            return res;
+          });
+      }, 5000, 'get shorturl within 5 seconds');
+    })
+    .catch(errorHandler);
+};
+// 5 sec
+const TIMEOUT = 5000;
 
 const common = {
   sleep: function (time) {
@@ -201,16 +251,9 @@ const common = {
   joinVisitorPrecall: function () {
     return common.switchToVisitor()
       .then(function () {
-        return browser.driver.findElement(by.id('joinConferenceButton'));
+        return clickWhenExist('#joinConferenceButton');
       })
-      .then(function (element) {
-        assert.ok(element, 'precall join button is not exist');
-        return execute('document.getElementById(\'joinConferenceButton\').click();');
-      })
-      .catch(function (e) {
-        assert.ifError(e);
-        return (e);
-      });
+      .catch(errorHandler);
   },
 
   verifyJoinWithoutPrecall: function () {
@@ -225,39 +268,39 @@ const common = {
           return new Error(errStr);
         }
       })
-      .catch(function (e) {
-        assert.ifError(e);
-        return new Error(e);
-      });
+      .catch(errorHandler);
   },
 
   validateConnection: function () {
     log.debug('verifying customer page video streams.');
-    return browser.wait(function () {
-      return browser.driver.executeScript(
-        "return window.document.querySelector('.sourcevideo') " +
-        "&& window.document.querySelector('.sourcevideo').srcObject " +
-        "&& window.document.querySelector('.sourcevideo').srcObject.getVideoTracks " +
-        "&& (window.document.querySelector('.sourcevideo').srcObject.getVideoTracks().length === 1) " +
-        "&& window.document.querySelector('.localvideo') " +
-        "&& window.document.querySelector('.localvideo').srcObject " +
-        "&& window.document.querySelector('.localvideo').srcObject.getVideoTracks " +
-        "&& (window.document.querySelector('.localvideo').srcObject.getVideoTracks().length === 1) "
-      )
-        .then(function (result) {
-          if (result) {
-            log.debug('customer page video verificiation succeed');
-            return true;
-          }
-          return false;
-        }, function (unhandledError) {
-          return unhandledError;
-        });
-    }, 5 * 1000, 'video should start in 5 seconds')
+    return common.switchToVisitor()
+      .then(function () {
+        return browser.wait(function () {
+          return browser.driver.executeScript(
+            "return window.document.querySelector('.sourcevideo') " +
+          "&& window.document.querySelector('.sourcevideo').srcObject " +
+          "&& window.document.querySelector('.sourcevideo').srcObject.getVideoTracks " +
+          "&& (window.document.querySelector('.sourcevideo').srcObject.getVideoTracks().length === 1) " +
+          "&& window.document.querySelector('.localvideo') " +
+          "&& window.document.querySelector('.localvideo').srcObject " +
+          "&& window.document.querySelector('.localvideo').srcObject.getVideoTracks " +
+          "&& (window.document.querySelector('.localvideo').srcObject.getVideoTracks().length === 1) "
+          )
+            .then(function (result) {
+              if (result) {
+                log.debug('customer page video verificiation succeed');
+                return true;
+              }
+              return false;
+            }, function (unhandledError) {
+              return unhandledError;
+            });
+        }, 5 * 1000, 'video should start in 5 seconds');
+      })
       .then(function () {
         // verify visitor page video - should connect in 15 sec
         log.debug('verifying agent page video streams.');
-        return browser.switchTo().window(secondWindow)
+        return switchToAgent()
           .then(function () {
             return browser.wait(function () {
               return browser.driver.executeScript(
@@ -274,7 +317,7 @@ const common = {
                 }, function (unhandledError) {
                   return unhandledError;
                 });
-            }, TIMEOUT);
+            }, TIMEOUT, 'agent page video stream is not verified');
           });
       });
   },
@@ -295,7 +338,7 @@ const common = {
         startVisitor(videoOn);
       })
       .then(function () {
-        return prepateSecondTab();
+        return prepareSecondTab();
       })
       .then(function () {
         return startAgentFromConsole();
@@ -303,10 +346,33 @@ const common = {
       .then(function () {
         return verifyAgentPushConnection();
       })
-      .catch(function (e) {
-        assert.ifError(e);
-        return new Error(e);
-      });
+      .catch(errorHandler);
+  },
+
+  establishOutboundConnection: function () {
+    return browser.driver.manage().window().maximize()
+      .then(function () {
+        return startAgent();
+      })
+      .then(function () {
+        return verifyAgentPrecall();
+      })
+      .then(function () {
+        return prepareSecondTab(true);
+      })
+      .then(function () {
+        return clickAgentVideoChat();
+      })
+      .then(function () {
+        return getVisitorShortUrl();
+      })
+      .then(function (url) {
+        return startVisitorByURL(url);
+      })
+      .then(function () {
+        return verifyAgentPushConnection();
+      })
+      .catch(errorHandler);
   },
 
   finishCall: function () {
@@ -328,19 +394,13 @@ const common = {
         // TODO verify redirection
         return restartBrowser();
       })
-      .catch(function (e) {
-        assert.ifError(e);
-        return new Error(e);
-      });
+      .catch(errorHandler);
   },
 
   terminateCall: function () {
     log.debug('terminate all windows');
     return restartBrowser()
-      .catch(function (e) {
-        assert.ifError(e);
-        return new Error(e);
-      });
+      .catch(errorHandler);
   },
 
   switchBrowser1frame: function () {
@@ -369,31 +429,20 @@ const common = {
 
   isSafetyDisabled: function () {
     console.log('validate safety disabled');
-    return browser.driver.wait((execute(isInvisible('document.querySelector(".wd-v-safety")'))));
+    return waitCondition(isInvisible('document.querySelector(".wd-v-safety")'), 'safety is visible');
   },
 
   isSafetyEnabled: function () {
     console.log('validate safety enabled');
-    return browser.driver.wait(execute(isVisible('document.querySelector(".wd-v-safety")')));
+    return waitCondition(isVisible('document.querySelector(".wd-v-safety")'), 'safety is not visible');
   },
 
   callEstablishedByChatToken: function () {
     return switchToAgent()
       .then(function () {
-        log.debug('switching to agent tab');
-        return browser.wait(async function () {
-          return browser.driver.executeScript('return (window.getVeContext().chat_token != null)')
-            .then(function (result) {
-              if (result === true) {
-                return true;
-              }
-              return false;
-            }, function (err) {
-              log.debug(err);
-              assert.ifError(err, 'agent chat token not found');
-              return err;
-            });
-        }, TIMEOUT);
+        return browser.driver.wait(function () {
+          return browser.driver.executeScript('return (window.getVeContext().chat_token !== null)');
+        }, TIMEOUT, 'call establih by chat noken not verified');
       });
   },
 
@@ -405,13 +454,12 @@ const common = {
         }
         iframeElement = element;
         return iframeElement.getAttribute('src');
-      }, function (unhandledError) {
-        return unhandledError;
       })
       .then(function (iframeUrl) {
         sessionId = JSON.parse(Buffer.from(iframeUrl.split('&')[1].toString().substring(7), 'base64').toString()).sessionId;
         return true;
-      });
+      })
+      .catch(errorHandler);
   },
 
   clickAgentRedButton: function () {
@@ -460,6 +508,16 @@ const common = {
 
   setBlur: function (blur) {
     return dbAPI.updateBrokerageProfile({ branding: { buttons: { 'wd-v-blur': blur } } });
+  },
+
+  setDefaultDB: function () {
+    return common.setPrecall(false)
+      .then(function () {
+        return common.setSafety(false, false);
+      })
+      .then(function () {
+        return common.setBlur(false);
+      });
   },
 
   /**

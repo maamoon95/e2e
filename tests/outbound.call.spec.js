@@ -26,20 +26,16 @@ describe('inbound call', function () {
     browser.waitForAngularEnabled(false);
   });
 
-  // single page demo
   it('should establish the call and finish the call', function () {
     log.debug('Establish Connection');
-    return common.establishInboundConnection(true, false)
+    return common.establishOutboundConnection()
       .then(function () {
-        log.debug('join Call');
         return common.verifyJoinWithoutPrecall();
       })
       .then(function () {
-        log.debug('validate Connection');
         return common.validateConnection();
       })
       .then(function () {
-        log.debug('Finish Call');
         return common.finishCall();
       })
       .catch(function (e) {
@@ -47,4 +43,4 @@ describe('inbound call', function () {
         return common.terminateCall();
       });
   });
-}, TIMEOUT);
+}, TIMEOUT, 'test timeout');
