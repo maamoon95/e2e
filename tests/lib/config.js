@@ -1,7 +1,7 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const environments = {
-  test: {
+  dev: {
     pak: 'DEV2',
     externalId: 'videoEngager',
     firstName: 'name',
@@ -14,6 +14,25 @@ const environments = {
     hideChat: true,
     hideInfo: true,
     baseURL: 'https://dev.videoengager.com',
+    organizationId: '327d10eb-0826-42cd-89b1-353ec67d33f8',
+    deploymentId: 'c2eaaa5c-d755-4e51-9136-b5ee86b92af3',
+    tennantId: 'test_tenant',
+    environment: 'https://api.mypurecloud.com.au',
+    queue: 'video'
+  },
+  test: {
+    pak: 'DEV2',
+    externalId: 'videoEngager',
+    firstName: 'name',
+    lastName: 'last',
+    email: 't@t',
+    password: '1',
+    userName: 't',
+    id: '123',
+    subject: 'subj',
+    hideChat: true,
+    hideInfo: true,
+    baseURL: 'http://localhost:9000',
     organizationId: '327d10eb-0826-42cd-89b1-353ec67d33f8',
     deploymentId: 'c2eaaa5c-d755-4e51-9136-b5ee86b92af3',
     tennantId: 'test_tenant',

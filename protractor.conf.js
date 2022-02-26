@@ -2,6 +2,7 @@
 // https://github.com/angular/protractor/blob/master/referenceConf.js
 /* globals browser */
 const config = require('./tests/lib/config');
+let SpecReporter = require('jasmine-spec-reporter').SpecReporter;
 
 const protractorConfig = {
   // The timeout for each script run on the browser. This should be longer
@@ -17,7 +18,7 @@ const protractorConfig = {
 
   // list of files / patterns to load in the browser
   specs: [
-    'tests/*.spec.js'
+    'tests/base*.spec.js'
   ],
   // Patterns to exclude.
   exclude: [],
@@ -43,6 +44,24 @@ const protractorConfig = {
   },
   onPrepare: function () {
     browser.driver.sleep(1000);
+    jasmine.getEnv().addReporter(
+      new SpecReporter({
+      // Defaults: https://github.com/bcaudan/jasmine-spec-reporter#default-options
+      // Configuration: https://github.com/bcaudan/jasmine-spec-reporter/blob/master/src/configuration.ts
+        suite: {
+          displayNumber: true
+        },
+        spec: {
+          displayPending: true,
+          displayDuration: true
+        },
+        summary: {
+          displaySuccesses: false, // display summary of all successes after execution
+          displayFailed: false, // display summary of all failures after execution
+          displayPending: false  // display summary of all pending specs after execution
+        }
+      })
+    );
   }
 };
 
@@ -72,6 +91,9 @@ protractorConfig.multiCapabilities = [/* {
       }
     }
   }, */{
+    loggingPrefs: {
+      browser: 'WARNING' // "OFF", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST", "ALL".
+    },
     browserName: 'chrome',
     unexpectedAlertBehaviour: 'accept',
     chromeOptions: {
