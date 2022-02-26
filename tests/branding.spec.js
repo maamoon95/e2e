@@ -20,7 +20,10 @@ describe('blur settings test', function () {
   });
 
   beforeAll(function () {
-    common.getToken();
+    return common.getToken()
+      .then(function () {
+        return common.setDefaultDB();
+      });
   });
 
   it('enable consent text', function () {

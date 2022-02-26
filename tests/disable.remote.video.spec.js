@@ -18,8 +18,10 @@ describe('disable remote video test', function () {
   });
 
   beforeAll(function () {
-    log.info('disable remote video test');
-    common.getToken();
+    return common.getToken()
+      .then(function () {
+        return common.setDefaultDB();
+      });
   });
 
   it('should verify safety not enabled', function () {

@@ -15,7 +15,10 @@ describe('precall', function () {
   });
 
   beforeAll(function () {
-    common.getToken();
+    return common.getToken()
+      .then(function () {
+        return common.setDefaultDB();
+      });
   });
 
   beforeEach(function () {

@@ -18,7 +18,10 @@ describe('disable remote video test', function () {
   });
 
   beforeAll(function () {
-    common.getToken();
+    return common.getToken()
+      .then(function () {
+        return common.setDefaultDB();
+      });
   });
 
   it('should mute and unmute agent', function () {
