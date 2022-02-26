@@ -13,7 +13,7 @@ npm run webdriver
 npm run dev-test     
 ```
 
-Tests are run against configuration specified in config.js based on NODE_ENV.
+Tests are run using configuration specified in config.js based on NODE_ENV.
 
 ```bash
 NODE_ENV=environment npm run test     
