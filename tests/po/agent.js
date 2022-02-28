@@ -38,7 +38,7 @@ class Agent extends Page  {
     await browser.executeScript('window.jsVeInitClb = function () {_videoengager.startVideoVisitor("' + visitorId + '");} ');
   };
   localVideoStarted = async function () {
-    return browser.wait(until.visibilityOf(element(by.id('localVideo'))), 30000);
+    return browser.wait(until.visibilityOf(element(by.id('localVideo'))), 30000, 'Agent localvideo not available in 30s');
   };
   remoteVideoStarted = async function () {
        return browser.wait(until.visibilityOf(element(by.id('remoteVideo'))), 5000, 'Remote Video not available in 5s');

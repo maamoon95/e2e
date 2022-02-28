@@ -18,7 +18,7 @@ const protractorConfig = {
 
   // list of files / patterns to load in the browser
   specs: [
-    'tests/base*.spec.js'
+    'tests/base.spec.js'
   ],
   // Patterns to exclude.
   exclude: [],

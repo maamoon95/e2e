@@ -1,13 +1,15 @@
 const { browser } = require('protractor');
+const assert = require('assert');
 
 module.exports = class Page {
-  // All pages browser handles
-  static handles = [];
-	
+  // Parent page handle, to workaround webdriver 'already closed'
+  // we will always switch to parent before opening new windows
+  static parentHandle = "";
+  
   constructor() {
     // Instance browser handle
-		this.myHandle = "";
-	};
+    this.myHandle = "";
+  };
   
   switchTo = async function () {
     await browser.switchTo().window(this.myHandle);
@@ -21,19 +23,17 @@ module.exports = class Page {
   };
 
   openAsNew = async function (url) {
-  	browser.waitForAngularEnabled(false);
+    browser.waitForAngularEnabled(false);
+    if(Page.parentHandle) {
+      console.log('Switching to parentHandle' + Page.parentHandle)
+      this.myHandle = Page.parentHandle;
+      await this.switchTo();
+    } 
     await browser.executeScript('window.open()');
+
     const windows = await browser.getAllWindowHandles();
-    if(Page.handles.length === 0) { // handle first run
-      this.myHandle = windows[1];
-    } else { // assume on every new window we got one more hanlde
-      const index = Page.handles.indexOf(this.myHandle);
-      if (index > -1) {
-        Page.handles.splice(index, 1);
-      }
-      this.myHandle = windows[windows.length - 1];
-    }
-    Page.handles = windows;
+    Page.parentHandle = windows[0];
+    this.myHandle = windows[windows.length - 1];
     await this.switchTo();
     await this.open(url);
   }

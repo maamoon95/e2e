@@ -15,7 +15,7 @@ const util = require('./lib/common');
 
 log.init(config.logger);
 
-describe('End 2 End Video Call between agent and visitor C2video', function () {
+describe('Basic video call tests', function () {
   const VISITOR_SESSION_ID = '123';
   let url;
   let visitorUrl;
@@ -32,12 +32,10 @@ describe('End 2 End Video Call between agent and visitor C2video', function () {
       .then(browserLog => {
         browserLog.forEach(function (message) { log.info(message); });
       });
-    await agent.switchTo();
-    await agent.hangup.click();
-    await agent.confirm.click();
+
   });
 
-  it('should make inbound call, and end it from agent', async function () {
+  it('should make inbound call, agent page loads first', async function () {
     // visitor id to be used in both agent and visitor page init
     log.debug('about to open agent url:' + url);
     await agent.openAsNew(url);
@@ -58,8 +56,11 @@ describe('End 2 End Video Call between agent and visitor C2video', function () {
     await visitor.localVideoStarted();
     await expect(visitor.localvideo.getAttribute('readyState')).toEqual('4');
     await visitor.remoteVideoStarted();
+    await agent.switchTo();
+    await agent.hangup.click();
+    await agent.confirm.click();
   });
-  it('should make c2v startig with visitor page', async function () {
+  it('should make inbound call, visitor page loads first', async function () {
     // Test will use different visitor session
     const vurl = visitor.constructUrlC2V(config.test_env, '456');
     log.debug('about to open visitor Url' + vurl);
@@ -73,11 +74,14 @@ describe('End 2 End Video Call between agent and visitor C2video', function () {
     expect(await agent.localVideoStarted()).toBeTruthy();
     await agent.remoteVideoStarted();
     await expect(agent.localvideo.getAttribute('readyState')).toEqual('4');
-    
+  
     // switch to visitor and verify we have local and remote video
     await visitor.switchTo();
     await visitor.localVideoStarted();
     await expect(visitor.localvideo.getAttribute('readyState')).toEqual('4');
     await visitor.remoteVideoStarted();
+    await agent.switchTo();
+    await agent.hangup.click();
+    await agent.confirm.click();
   });
 });
