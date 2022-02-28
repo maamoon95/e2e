@@ -40,11 +40,11 @@ const environments = {
     queue: 'video'
   },
   staging: {
-    pak: '72884930-79d1-3221-166d-58b3a9894e16',
+    pak: 'c50859ee-fda4-258b-6c34-d77566373a7b',
     externalId: 'Home',
     firstName: 'Slav',
     lastName: 'Hadjidimitrov',
-    email: 'slav@videoengager.com',
+    email: 'f6668859-042a-4b04-b998-3e3261fb3dd4slav@videoengager.com',
     password: '123456',
     userName: 't',
     id: '123',
@@ -52,9 +52,9 @@ const environments = {
     hideChat: true,
     hideInfo: true,
     baseURL: 'https://staging.leadsecure.com',
-    organizationId: '639292ca-14a2-400b-8670-1f545d8aa860',
+    organizationId: 'f6668859-042a-4b04-b998-3e3261fb3dd4',
     deploymentId: '1b4b1124-b51c-4c38-899f-3a90066c76cf',
-    tennantId: 'oIiTR2XQIkb7p0ub',
+    tennantId: 'IF9UduUVaQ3ldy8N',
     environment: 'https://api.mypurecloud.de',
     queue: 'Support'
   },
