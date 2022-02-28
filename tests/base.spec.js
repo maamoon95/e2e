@@ -28,10 +28,10 @@ describe('Basic video call tests', function () {
   });
 
   afterEach(async function () {
-    browser.manage().logs().get('browser')
-      .then(browserLog => {
-        browserLog.forEach(function (message) { log.info(message); });
-      });
+    // browser.manage().logs().get('browser')
+    //   .then(browserLog => {
+    //     browserLog.forEach(function (message) { log.info(message); });
+    //   });
 
   });
 

@@ -3,6 +3,7 @@
 /* globals browser */
 const config = require('./tests/lib/config');
 let SpecReporter = require('jasmine-spec-reporter').SpecReporter;
+let HtmlReporter = require('protractor-beautiful-reporter');
 
 const protractorConfig = {
   // The timeout for each script run on the browser. This should be longer
@@ -62,6 +63,20 @@ const protractorConfig = {
         }
       })
     );
+    jasmine.getEnv().addReporter(new HtmlReporter({
+            baseDirectory: './testreports',
+            gatherBrowserLogs: true,
+            screenshotsSubfolder: './screenshotsOnFailure',
+            takeScreenShotsOnlyForFailedSpecs: false,
+            jsonsSubfolder: 'jsonFiles',
+            excludeSkippedSpecs: true,
+            preserveDirectory: false,
+            clientDefaults:{
+            showTotalDurationIn: "header",
+            totalDurationFormat: "h:m:s",
+            gatherBrowserLogs: true
+          },
+         }).getJasmine2Reporter());
   }
 };
 
@@ -92,7 +107,7 @@ protractorConfig.multiCapabilities = [/* {
     }
   }, */{
     loggingPrefs: {
-      browser: 'WARNING' // "OFF", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST", "ALL".
+      browser: 'ALL' // "OFF", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST", "ALL".
     },
     browserName: 'chrome',
     unexpectedAlertBehaviour: 'accept',
