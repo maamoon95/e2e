@@ -98,21 +98,6 @@ const startAgentFromURL = function () {
   return browser.get(url);
 };
 
-const restartBrowser = async function () {
-  await browser.executeScript('window.open()');
-  const handles = await browser.getAllWindowHandles();
-  for (let i = 0; i < handles.length - 1; i++) {
-    try {
-      await browser.switchTo().window(handles[i]);
-      await browser.driver.close();
-    } catch (error) {
-      log.error('frame already closed');
-    }
-  }
-  await browser.switchTo().window(handles[handles.length - 1]);
-  return browser.driver.sleep(100);
-};
-
 const getGuid = function () {
   function s4 () {
     return Math.floor((1 + Math.random()) * 0x5000).toString(16).substring(1);
@@ -209,41 +194,50 @@ const clickWhenExist = function (selector) {
     .catch(errorHandler);
 };
 
-const clickAgentVideoChat = function () {
-  return switchToAgent()
-    .then(function () {
-      return browser.driver.wait(function () {
-        return browser.driver.executeScript('return (document.querySelector("button#startVideoButton.button") !== null)')
-          .then(function (res) {
-            return res;
-          });
-      }, 5000, 'load agent precall btn within 5 seconds');
-    })
-    .then(function () {
-      return browser.driver.sleep(500);
-    })
-    .then(function () {
-      return execute('document.querySelector("button#startVideoButton.button").click();');
-    })
-    .catch(errorHandler);
-};
-
-const getVisitorShortUrl = function () {
-  return switchToAgent()
-    .then(function () {
-      return browser.driver.wait(function () {
-        return browser.driver.executeScript('return (window.getVeContext().cloudUrl)')
-          .then(function (res) {
-            return res;
-          });
-      }, 5000, 'get shorturl within 5 seconds');
-    })
-    .catch(errorHandler);
-};
 // 5 sec
 const TIMEOUT = 5000;
 
 const common = {
+  restartBrowser: async function () {
+    await browser.executeScript('window.open()');
+    const handles = await browser.getAllWindowHandles();
+    for (let i = 0; i < handles.length - 1; i++) {
+      try {
+        await browser.switchTo().window(handles[i]);
+        await browser.driver.close();
+      } catch (error) {
+        log.error('frame already closed');
+      }
+    }
+    await browser.switchTo().window(handles[handles.length - 1]);
+    return browser.driver.sleep(100);
+  },
+
+  getVisitorShortUrl: function () {
+    return browser.driver.wait(function () {
+      return browser.driver.executeScript('return (window.getVeContext().cloudUrl)')
+        .then(function (res) {
+          return res;
+        });
+    }, 5000, 'get shorturl within 5 seconds');
+  },
+
+  clickAgentVideoChat: function () {
+    return browser.driver.wait(function () {
+      return browser.driver.executeScript('return (document.querySelector("button#startVideoButton.button") !== null)')
+        .then(function (res) {
+          return res;
+        });
+    }, 5000, 'load agent precall btn within 5 seconds')
+      .then(function () {
+        return browser.driver.sleep(500);
+      })
+      .then(function () {
+        return execute('document.querySelector("button#startVideoButton.button").click();');
+      })
+      .catch(errorHandler);
+  },
+
   sleep: function (time) {
     return browser.driver.sleep(time);
   },
@@ -361,10 +355,13 @@ const common = {
         return prepareSecondTab(true);
       })
       .then(function () {
-        return clickAgentVideoChat();
+        return common.switchToAgent();
       })
       .then(function () {
-        return getVisitorShortUrl();
+        return common.clickAgentVideoChat();
+      })
+      .then(function () {
+        return common.getVisitorShortUrl();
       })
       .then(function (url) {
         return startVisitorByURL(url);

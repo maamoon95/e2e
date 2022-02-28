@@ -31,7 +31,7 @@ module.exports = class Page {
       if (index > -1) {
         Page.handles.splice(index, 1);
       }
-      this.myHandle = windows[Page.handles.length];
+      this.myHandle = windows[windows.length - 1];
     }
     Page.handles = windows;
     await this.switchTo();
