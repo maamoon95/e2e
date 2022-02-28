@@ -13,7 +13,7 @@ class Visitor extends Page {
   get localvideo () { return element(by.id('localVideo'+this.tennantId))}
 
   localVideoStarted = async function () {
-    return browser.wait(until.visibilityOf(element(by.id('localVideo' + this.tennantId))), 10000, 'Visitor localVideo does not became available in 10s');
+    return browser.wait(until.visibilityOf(element(by.id('localVideo' + this.tennantId))), 20000, 'Visitor localVideo does not became available in 20s');
   };
   
   remoteVideoStarted = async function () {
