@@ -93,6 +93,7 @@ class Agent extends Page  {
     url += '?params=' + Buffer.from('{"locale":"en_US"}').toString('base64');
     url += '&interaction=1';
     url += '&token=' + token;
+    url += '&tennantId=' + Buffer.from(confobject.tennantId).toString('base64');
     if (sessionId){
       url += '&invitationId=' + sessionId;
     } else {
