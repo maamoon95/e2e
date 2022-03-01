@@ -1,8 +1,8 @@
 /* global by */
 const { browser, by, element } = require('protractor');
+const config = require('./config');
 const log = require('./logger');
 const dbAPI = require('./dbAPI');
-const config = require('./config');
 const assert = require('assert');
 log.init(config.logger);
 

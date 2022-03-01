@@ -25,7 +25,6 @@ module.exports = class Page {
   openAsNew = async function (url) {
     browser.waitForAngularEnabled(false);
     if(Page.parentHandle) {
-      console.log('Switching to parentHandle' + Page.parentHandle)
       this.myHandle = Page.parentHandle;
       await this.switchTo();
     } 
