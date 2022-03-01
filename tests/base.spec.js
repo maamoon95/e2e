@@ -86,8 +86,7 @@ describe('Basic video call tests', function () {
   });
   it('should make outbound call, and end it from agent', async function () {
     // open agent page
-    await visitor.switchTo();
-    await agent.open(url);
+    await agent.openAsNew(url);
     // config agent without sessionID
     await agent.configureAgentWithJS(config.test_env);
     // click blue button in agent
@@ -97,7 +96,8 @@ describe('Basic video call tests', function () {
     // get visitor short url
     visitorUrl = await agent.getCloudUrl();
     // open visitor page
-    await visitor.openAsNew(visitorUrl);
+    await visitor.switchTo();
+    await visitor.open(visitorUrl);
 
     // switch to agent page and verify we have local and remote video
     await agent.switchTo();
