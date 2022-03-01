@@ -84,4 +84,35 @@ describe('Basic video call tests', function () {
     await agent.hangup.click();
     await agent.confirm.click();
   });
+  it('should make outbound call, and end it from agent', async function () {
+    // open agent page
+    await visitor.switchTo();
+    await agent.open(url);
+    // config agent without sessionID
+    await agent.configureAgentWithJS(config.test_env);
+    // click blue button in agent
+    await agent.previewVideoStarted();
+    // get visitor short url
+    await agent.startVideo.click();
+    // get visitor short url
+    visitorUrl = await agent.getCloudUrl();
+    // open visitor page
+    await visitor.openAsNew(visitorUrl);
+
+    // switch to agent page and verify we have local and remote video
+    await agent.switchTo();
+    expect(await agent.localVideoStarted()).toBeTruthy();
+    await agent.remoteVideoStarted();
+    await expect(agent.localvideo.getAttribute('readyState')).toEqual('4');
+
+    // switch to visitor and verify we have local and remote video
+    await visitor.switchTo();
+    expect(await visitor.localVideoStarted()).toBeTruthy();
+    await visitor.remoteVideoStarted();
+    await expect(visitor.localvideo.getAttribute('readyState')).toEqual('4');
+
+    await agent.switchTo();
+    await agent.hangup.click();
+    await agent.confirm.click();
+  });
 });

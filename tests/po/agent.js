@@ -26,9 +26,14 @@ const until = browser.ExpectedConditions;
   },
  */
 class Agent extends Page  {
+  // buttons
   get hangup () { return element(by.id('hangupButton'));}
   get confirm () { return element(by.id('confirmDismissBtn'));}
-  get localvideo () { return element(by.id('localVideo'))}
+  get startVideo () {return element(by.id('startVideoButton'));}
+  // elements
+  get localvideo () { return element(by.id('localVideo'));}
+  get videoPreview () { return element(by.id('videoPreview'));}
+
   constructUrl = function (confobject) {
     log.debug('using config object:' + JSON.stringify(confobject));
     return confobject.baseURL + '/static/agent.popup.cloud.html';
@@ -41,10 +46,18 @@ class Agent extends Page  {
     return browser.wait(until.visibilityOf(element(by.id('localVideo'))), 30000, 'Agent localvideo not available in 30s');
   };
   remoteVideoStarted = async function () {
-       return browser.wait(until.visibilityOf(element(by.id('remoteVideo'))), 5000, 'Remote Video not available in 5s');
-  };  
+    return browser.wait(until.visibilityOf(element(by.id('remoteVideo'))), 5000, 'Remote Video not available in 5s');
+  };
+  previewVideoStarted = async function () {
+    return browser.wait(until.visibilityOf(element(by.id('videoPreview'))), 15000, 'Preview video not available in 5s');
+  };
   hasSrcObject = function() {
     return element(by.id('localVideo')).getAttribute('srcObject');
+  };
+  getCloudUrl = function () {
+    return browser.driver.wait(function () {
+      return browser.driver.executeScript('return (window.getVeContext().cloudUrl)');
+    }, 5000, 'get shorturl within 5 seconds');
   };
   configureAgentWithJS = async function (confobject, sessionId) {
     // {\'pak\':"' + config.test_env.pak + '", \'externalId\':"' + config.test_env.externalId + '"}
