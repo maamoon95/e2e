@@ -24,8 +24,11 @@ const impersonateCreate = function () {
   });
 };
 
-const impersonate = function () {
-  const url = `${TEST_ENV.baseURL}/api/partners/impersonate/${TEST_ENV.pak}/${TEST_ENV.externalId}/${TEST_ENV.email}`;
+const impersonate = function (confobject) {
+  if (!confobject) {
+    confobject = TEST_ENV;
+  }
+  const url = `${confobject.baseURL}/api/partners/impersonate/${confobject.pak}/${confobject.externalId}/${confobject.email}`;
   return axios.get(url)
     .then(function (result) {
       token = result.data.token;

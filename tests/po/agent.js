@@ -2,7 +2,7 @@ const { browser, element, by } = require('protractor');
 const  Page = require('./page.js');
 const log = require('../lib/logger');
 const until = browser.ExpectedConditions;
-
+const dbAPI = require('../lib/dbAPI');
 /**
  *
  confobject: {
@@ -86,6 +86,35 @@ class Agent extends Page  {
     }
     await browser.executeScript('_videoengager.init(' + initString + ');');
   };
-}
+  createAgentUrlWithJS = async function (confobject, sessionId) {
+    // get authentication token by impersonalization mechanism
+    const token = await dbAPI.impersonate(confobject);
+    let url = confobject.baseURL + '/static/agent.popup.cloud.html';
+    url += '?params=' + Buffer.from('{"locale":"en_US"}').toString('base64');
+    url += '&interaction=1';
+    url += '&token=' + token;
+    if (sessionId){
+      url += '&invitationId=' + sessionId;
+    } else {
+      url += '&transferId=123';
+    }
+    url += '&sk=true';
+    const options = {
+      audioOnly: false,
+      pin: false,
+      conferenceId: 1
+    };
+    if (options.audioOnly){
+      url += '&audioOnly=' + options.audioOnly;
+    }
+    if (options.conferenceId) {
+      url += '&conferenceId=' + options.conferenceId;
+    }
+    if (options.pin) {
+      url += '&pin=' + options.pin;
+    }
 
+    return url;
+  };
+}
 module.exports = Agent;
