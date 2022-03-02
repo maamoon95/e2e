@@ -5,7 +5,7 @@ const config = require('./lib/config');
 const log = require('./lib/logger')
 log.init(config.logger);
 
-const crypto = require('crypto');
+const crypto = require('uuid');
 
 // Import Agent class definition
 const Agent = require('./po/agent');
@@ -31,7 +31,7 @@ describe('Basic video call tests', function () {
   
   describe('Configured with Javascript functions', function () {
     beforeEach(function () {
-      VISITOR_SESSION_ID = crypto.randomUUID();
+      VISITOR_SESSION_ID = crypto.v1();
       url = agent.constructUrl(config.test_env);
       visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
     })
