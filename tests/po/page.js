@@ -15,6 +15,12 @@ module.exports = class Page {
     await browser.switchTo().window(this.myHandle);
   };
 
+  close = async function () {
+    await this.switchTo();
+    await browser.close();
+    this.myHandle = '';
+  };
+
   open = async function (url) {
     browser.waitForAngularEnabled(false);
     await browser.get(url);

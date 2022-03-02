@@ -105,7 +105,7 @@ module.exports = {
       {
         type: 'console',
         colorize: true,
-        level: 'error',
+        level: 'debug',
         timestamp: true
       }
     ]
