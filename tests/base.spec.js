@@ -66,8 +66,6 @@ describe('Basic video call tests', function () {
       await agent.switchTo();
       await agent.hangup.click();
       await agent.confirm.click();
-
-      await visitor.close();
     });
 
     it('should make inbound call, visitor page loads first', async function () {
@@ -92,7 +90,6 @@ describe('Basic video call tests', function () {
       await agent.switchTo();
       await agent.hangup.click();
       await agent.confirm.click();
-      await visitor.close();
     });
 
     it('should make outbound call, and end it from agent', async function () {
@@ -124,8 +121,6 @@ describe('Basic video call tests', function () {
       await agent.switchTo();
       await agent.hangup.click();
       await agent.confirm.click();
-
-      await visitor.close();
     });
   });
 
@@ -139,7 +134,6 @@ describe('Basic video call tests', function () {
       await agent.switchTo();
       await agent.hangup.click();
       await agent.confirm.click();
-      await visitor.close();
     });
 
     it('should make inbound call, agent page loads first', async function () {

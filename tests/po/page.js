@@ -16,8 +16,13 @@ module.exports = class Page {
   };
 
   close = async function () {
-    await this.switchTo();
-    await browser.close();
+    assert(this.myHandle);
+    try {
+      await this.switchTo();
+      await browser.close();
+    } catch(NoSuchWindowError) {
+
+    };
     this.myHandle = '';
   };
 
@@ -29,6 +34,8 @@ module.exports = class Page {
   };
 
   openAsNew = async function (url) {
+    if(this.myHandle)
+      await this.close();
     browser.waitForAngularEnabled(false);
     if(Page.parentHandle) {
       this.myHandle = Page.parentHandle;
