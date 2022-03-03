@@ -1,9 +1,9 @@
 // Protractor configuration
 // https://github.com/angular/protractor/blob/master/referenceConf.js
-/* globals browser */
+/* globals browser jasmine */
 const config = require('./tests/lib/config');
-let SpecReporter = require('jasmine-spec-reporter').SpecReporter;
-let HtmlReporter = require('protractor-beautiful-reporter');
+const SpecReporter = require('jasmine-spec-reporter').SpecReporter;
+const HtmlReporter = require('protractor-beautiful-reporter');
 
 const protractorConfig = {
   // The timeout for each script run on the browser. This should be longer
@@ -59,24 +59,24 @@ const protractorConfig = {
         summary: {
           displaySuccesses: false, // display summary of all successes after execution
           displayFailed: false, // display summary of all failures after execution
-          displayPending: false  // display summary of all pending specs after execution
+          displayPending: false // display summary of all pending specs after execution
         }
       })
     );
     jasmine.getEnv().addReporter(new HtmlReporter({
-            baseDirectory: './testreports',
-            gatherBrowserLogs: true,
-            screenshotsSubfolder: './screenshotsOnFailure',
-            takeScreenShotsOnlyForFailedSpecs: false,
-            jsonsSubfolder: 'jsonFiles',
-            excludeSkippedSpecs: true,
-            preserveDirectory: false,
-            clientDefaults:{
-            showTotalDurationIn: "header",
-            totalDurationFormat: "h:m:s",
-            gatherBrowserLogs: true
-          },
-         }).getJasmine2Reporter());
+      baseDirectory: './testreports',
+      gatherBrowserLogs: true,
+      screenshotsSubfolder: './screenshotsOnFailure',
+      takeScreenShotsOnlyForFailedSpecs: true,
+      jsonsSubfolder: 'jsonFiles',
+      excludeSkippedSpecs: true,
+      preserveDirectory: false,
+      clientDefaults: {
+        showTotalDurationIn: 'header',
+        totalDurationFormat: 'h:m:s',
+        gatherBrowserLogs: true
+      }
+    }).getJasmine2Reporter());
   }
 };
 
