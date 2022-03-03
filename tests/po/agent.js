@@ -3,29 +3,13 @@ const  Page = require('./page.js');
 const log = require('../lib/logger');
 const until = browser.ExpectedConditions;
 const dbAPI = require('../lib/dbAPI');
-/**
- *
- confobject: {
-    pak: 'DEV2',
-    externalId: 'videoEngager',
-    firstName: 'name',
-    lastName: 'last',
-    email: 't@t',
-    password: '1',
-    userName: 't',
-    id: '123',
-    subject: 'subj',
-    hideChat: true,
-    hideInfo: true,
-    baseURL: 'https://dev.videoengager.com',
-    organizationId: '327d10eb-0826-42cd-89b1-353ec67d33f8',
-    deploymentId: 'c2eaaa5c-d755-4e51-9136-b5ee86b92af3',
-    tennantId: 'test_tenant',
-    environment: 'https://api.mypurecloud.com.au',
-    queue: 'video'
-  },
- */
+const veUtil = require('../lib/veUtil');
 class Agent extends Page  {
+  constructor(confObject) {
+    super();
+    this.confObject = confObject;
+  }
+
   // buttons
   get hangup () { return element(by.id('hangupButton'));}
   get confirm () { return element(by.id('confirmDismissBtn'));}
@@ -34,11 +18,6 @@ class Agent extends Page  {
   get localvideo () { return element(by.id('localVideo'));}
   get videoPreview () { return element(by.id('videoPreview'));}
 
-  constructUrl = function (confobject) {
-    log.debug('using config object:' + JSON.stringify(confobject));
-    return confobject.baseURL + '/static/agent.popup.cloud.html';
-  // body...
-  };
   setVisitorId = async function (visitorId) {
     await browser.executeScript('window.jsVeInitClb = function () {_videoengager.startVideoVisitor("' + visitorId + '");} ');
   };
@@ -59,16 +38,16 @@ class Agent extends Page  {
       return browser.driver.executeScript('return (window.getVeContext().cloudUrl)');
     }, 5000, 'get shorturl within 5 seconds');
   };
-  configureAgentWithJS = async function (confobject, sessionId) {
+  configureAgentWithJS = async function (sessionId) {
     // {\'pak\':"' + config.test_env.pak + '", \'externalId\':"' + config.test_env.externalId + '"}
     const confPartnerOrg = {
-      pak: confobject.pak,
-      externalId: confobject.externalId
+      pak: this.confObject.pak,
+      externalId: this.confObject.externalId
     };
     const confUsr = {
-      firstName: confobject.firstName,
-      lastName: confobject.lastName,
-      email: confobject.email,
+      firstName: this.confObject.firstName,
+      lastName: this.confObject.lastName,
+      email: this.confObject.email,
       userName: 't'
     };
     const confVisitor = {};
@@ -86,36 +65,125 @@ class Agent extends Page  {
     }
     await browser.executeScript('_videoengager.init(' + initString + ');');
   };
-  createAgentUrlWithJS = async function (confobject, sessionId) {
-    // get authentication token by impersonalization mechanism
-    const token = await dbAPI.impersonate(confobject);
-    let url = confobject.baseURL + '/static/agent.popup.cloud.html';
-    url += '?params=' + Buffer.from('{"locale":"en_US"}').toString('base64');
-    url += '&interaction=1';
-    url += '&token=' + token;
-    url += '&tennantId=' + Buffer.from(confobject.tennantId).toString('base64');
-    if (sessionId){
-      url += '&invitationId=' + sessionId;
-    } else {
-      url += '&transferId=123';
-    }
-    url += '&sk=true';
-    const options = {
-      audioOnly: false,
-      pin: false,
-      conferenceId: 1
-    };
-    if (options.audioOnly){
-      url += '&audioOnly=' + options.audioOnly;
-    }
-    if (options.conferenceId) {
-      url += '&conferenceId=' + options.conferenceId;
-    }
-    if (options.pin) {
-      url += '&pin=' + options.pin;
-    }
 
-    return url;
+  /**
+   * generate an agent url from given configuration
+   * @param {string} sessionId visitor session id
+   * @param {string} mode inbound and outbound connections
+   * @param {string} conferenceId same visitor and agent conferance id for 3 way call
+   * @param {string} pin same visitor and agent pin code
+   * @returns {string} agent url with configurations in url paramters
+   */
+  async createAgentUrlWithJS (sessionId, mode = 'inbound', conferenceId, pin) {
+    const params = {
+      params: veUtil.strToBase64('{"locale":"en_US"}'),
+      interaction: 1,
+      token: this.api.token,
+      sk: true,
+      isPopup: false
+    };
+    if (mode === 'inbound'){
+      params.invitationId = sessionId;
+    } else {
+      params.transferId = sessionId;
+      params.conferenceId = conferenceId;
+      params.pin = pin;
+    }
+    return `${this.confObject.baseURL}/static/agent.popup.cloud.html?${veUtil.generateUrlParamters(params)}`;
+  }
+
+  /**
+   * @returns {string} agent url for configured server
+   */
+  constructUrl () {
+    log.debug('using config object:' + JSON.stringify(this.confObject));
+    return this.confObject.baseURL + '/static/agent.popup.cloud.html';
+  }
+
+  /**
+   * generate shorturl for visitor and add it to db
+   * @param {string} string VISITOR_SESSION_ID
+   * @param {string} string CONFERENCE_ID
+   * @param {string} string PIN
+   * @returns {string} visitor short url
+   */
+  async createVisitorShortUrl (VISITOR_SESSION_ID, CONFERENCE_ID, PIN) {
+    const code = veUtil.makeid(6);
+    await this.api.addShorUrl(this.confObject, VISITOR_SESSION_ID, CONFERENCE_ID, PIN, code);
+    return this.confObject.baseURL + '/ve/' + code;
+  }
+
+  /**
+   * generate authorizatin token to be able to make api calls
+   */
+  async authenticate(){
+    return await this.api.authenticate(this.confObject);
+  }
+
+  /**
+   * return authorization token
+   */
+  get token (){
+    return this.api.token;
+  }
+
+  /**
+   * api calls for authorized agent
+   */
+  api = {
+    authenticate: async function (confObject) {
+      this.token = await dbAPI.impersonate(confObject);
+    },
+    /**
+     * @returns current agent's settings
+     */
+    getBrokerage: function () {
+      return dbAPI.getBrokerage(this.token)
+        .then(function (result) {
+          return result.data;
+        });
+    },
+    /**
+     * call to set precall
+     * @param {boolean} enable enable or disable precall by flag
+     * @returns promise
+     */
+    setPrecall: function (enable) {
+      return dbAPI.updateBrokerageProfile(this.token, { branding: { visitorShowPrecall: enable } });
+    },
+    /**
+     * call to set safety (anti harassment)
+     * @param {boolean} enable enable or disable functionality
+     * @param {boolean} disableRemoteCamera start with disabled remote camera
+     * @returns promise
+     */
+    setSafety: function (enable, disableRemoteCamera) {
+      return dbAPI.updateBrokerageProfile(this.token, { safety: { enable: enable, disableRemoteCamera: disableRemoteCamera } });
+    },
+    /**
+     * 
+     * @param {boolean} blur enable or disable blur func
+     * @returns promise
+     */
+    setBlur: function (blur) {
+      return dbAPI.updateBrokerageProfile(this.token, { branding: { buttons: { 'wd-v-blur': blur } } });
+    },
+    /**
+     * add generated visitor shorturl binded to full url to db
+     * @param {Object} confObject our environment configuration file
+     * @param {string} transferId visitor session id
+     * @param {string} conferenceId agent and visitor shared conferance id for 3 way call
+     * @param {string} pin agent and visitor shared pin code
+     * @param {string} code shorturl code
+     * @returns promise
+     */
+    addShorUrl: async function (confObject, transferId, conferenceId, pin, code) {
+      const encodedClientInfo = veUtil.jsonToBase64(veUtil.generateClientInfo(transferId));
+      const postData = veUtil.generateShortUrlPostData(confObject, conferenceId, encodedClientInfo, code, transferId, pin);
+      log.debug('postData:', JSON.stringify(postData));
+      const url = confObject.baseURL + '/api/shorturls';
+      return dbAPI.addShortUrl(this.token, url, postData);
+    }
   };
 }
 module.exports = Agent;
