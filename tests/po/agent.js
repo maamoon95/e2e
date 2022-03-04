@@ -5,9 +5,8 @@ const until = browser.ExpectedConditions;
 const dbAPI = require('../lib/dbAPI');
 const veUtil = require('../lib/veUtil');
 class Agent extends Page  {
-  constructor(confObject) {
+  constructor() {
     super();
-    this.confObject = confObject;
   }
 
   // buttons
@@ -38,16 +37,16 @@ class Agent extends Page  {
       return browser.driver.executeScript('return (window.getVeContext().cloudUrl)');
     }, 5000, 'get shorturl within 5 seconds');
   };
-  configureAgentWithJS = async function (sessionId) {
+  configureAgentWithJS = async function (confObject, sessionId) {
     // {\'pak\':"' + config.test_env.pak + '", \'externalId\':"' + config.test_env.externalId + '"}
     const confPartnerOrg = {
-      pak: this.confObject.pak,
-      externalId: this.confObject.externalId
+      pak: confObject.pak,
+      externalId: confObject.externalId
     };
     const confUsr = {
-      firstName: this.confObject.firstName,
-      lastName: this.confObject.lastName,
-      email: this.confObject.email,
+      firstName: confObject.firstName,
+      lastName: confObject.lastName,
+      email: confObject.email,
       userName: 't'
     };
     const confVisitor = {};
@@ -74,7 +73,7 @@ class Agent extends Page  {
    * @param {string} pin same visitor and agent pin code
    * @returns {string} agent url with configurations in url paramters
    */
-  async createAgentUrlWithJS (sessionId, mode = 'inbound', conferenceId, pin) {
+  async createAgentUrlWithJS (confObject, sessionId, mode = 'inbound', conferenceId, pin) {
     const params = {
       params: veUtil.strToBase64('{"locale":"en_US"}'),
       interaction: 1,
@@ -89,15 +88,15 @@ class Agent extends Page  {
       params.conferenceId = conferenceId;
       params.pin = pin;
     }
-    return `${this.confObject.baseURL}/static/agent.popup.cloud.html?${veUtil.generateUrlParamters(params)}`;
+    return `${confObject.baseURL}/static/agent.popup.cloud.html?${veUtil.generateUrlParamters(params)}`;
   }
 
   /**
    * @returns {string} agent url for configured server
    */
-  constructUrl () {
-    log.debug('using config object:' + JSON.stringify(this.confObject));
-    return this.confObject.baseURL + '/static/agent.popup.cloud.html';
+  constructUrl (confObject) {
+    log.debug('using config object:' + JSON.stringify(confObject));
+    return confObject.baseURL + '/static/agent.popup.cloud.html';
   }
 
   /**
@@ -107,17 +106,17 @@ class Agent extends Page  {
    * @param {string} string PIN
    * @returns {string} visitor short url
    */
-  async createVisitorShortUrl (VISITOR_SESSION_ID, CONFERENCE_ID, PIN) {
+  async createVisitorShortUrl (confObject, VISITOR_SESSION_ID, CONFERENCE_ID, PIN) {
     const code = veUtil.makeid(6);
-    await this.api.addShorUrl(this.confObject, VISITOR_SESSION_ID, CONFERENCE_ID, PIN, code);
-    return this.confObject.baseURL + '/ve/' + code;
+    await this.api.addShorUrl(confObject, VISITOR_SESSION_ID, CONFERENCE_ID, PIN, code);
+    return confObject.baseURL + '/ve/' + code;
   }
 
   /**
    * generate authorizatin token to be able to make api calls
    */
-  async authenticate(){
-    return await this.api.authenticate(this.confObject);
+  async authenticate(confObject){
+    return await this.api.authenticate(confObject);
   }
 
   /**
@@ -133,6 +132,7 @@ class Agent extends Page  {
   api = {
     authenticate: async function (confObject) {
       this.token = await dbAPI.impersonate(confObject);
+      this.confObject = confObject;
     },
     /**
      * @returns current agent's settings

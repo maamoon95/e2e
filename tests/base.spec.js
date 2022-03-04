@@ -10,9 +10,9 @@ const Agent = require('./po/agent');
 // Import visitor
 const Visitor = require('./po/visitor');
 // Create an agent page object with environment
-const agent = new Agent(config.test_env);
+const agent = new Agent();
 // Create a visitor page object with environment
-const visitor = new Visitor(config.test_env);
+const visitor = new Visitor();
 
 describe('Basic video call tests', function () {
   let VISITOR_SESSION_ID;
@@ -30,8 +30,8 @@ describe('Basic video call tests', function () {
   describe('Configured with Javascript functions', function () {
     beforeEach(function () {
       VISITOR_SESSION_ID = veUtil.uuid.v1();
-      agentUrl = agent.constructUrl();
-      visitorUrl = visitor.constructUrlC2V(VISITOR_SESSION_ID);
+      agentUrl = agent.constructUrl(config.test_env);
+      visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
     });
 
     afterEach(async function () {
@@ -47,7 +47,7 @@ describe('Basic video call tests', function () {
       await agent.openAsNew(agentUrl);
 
       // configure agent in 'autocall visitor session mode'
-      await agent.configureAgentWithJS(VISITOR_SESSION_ID);
+      await agent.configureAgentWithJS(config.test_env, VISITOR_SESSION_ID);
       log.debug('about to open visitor url in a second browser:' + visitorUrl);
       await visitor.openAsNew(visitorUrl);
 
@@ -66,14 +66,14 @@ describe('Basic video call tests', function () {
 
     it('should make inbound call, visitor page loads first', async function () {
       // Test will use different visitor session
-      const vurl = visitor.constructUrlC2V(VISITOR_SESSION_ID);
+      const vurl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
       log.debug('about to open visitor Url' + vurl);
       // open visitor window
       await visitor.openAsNew(vurl);
 
       // Agent window is closed, open new, with a session
       await agent.openAsNew(agentUrl);
-      await agent.configureAgentWithJS(VISITOR_SESSION_ID);
+      await agent.configureAgentWithJS(config.test_env, VISITOR_SESSION_ID);
       expect(await agent.localVideoStarted()).toBeTruthy();
       await agent.remoteVideoStarted();
       await expect(agent.localvideo.getAttribute('readyState')).toEqual('4');
@@ -89,7 +89,7 @@ describe('Basic video call tests', function () {
       // open agent page
       await agent.openAsNew(agentUrl);
       // config agent without sessionID
-      await agent.configureAgentWithJS();
+      await agent.configureAgentWithJS(config.test_env);
       // click blue button in agent
       await agent.previewVideoStarted();
       // get visitor short url
@@ -129,7 +129,7 @@ describe('Basic video call tests', function () {
       // renew visitor id
       VISITOR_SESSION_ID = veUtil.uuid.v1();
       // generate visitor url using new visitor id
-      visitorUrl = visitor.constructUrlC2V(VISITOR_SESSION_ID);
+      visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
     });
 
     afterEach(async function () {
@@ -140,7 +140,7 @@ describe('Basic video call tests', function () {
     });
 
     it('should make inbound call, agent page loads first', async function () {
-      agentUrl = await agent.createAgentUrlWithJS(VISITOR_SESSION_ID);
+      agentUrl = await agent.createAgentUrlWithJS(config.test_env, VISITOR_SESSION_ID);
       log.debug('about to open agent url:' + agentUrl);
       await agent.openAsNew(agentUrl);
 
@@ -164,7 +164,7 @@ describe('Basic video call tests', function () {
       log.debug('about to open visitor url in a second browser:' + visitorUrl);
       await visitor.openAsNew(visitorUrl);
 
-      agentUrl = await agent.createAgentUrlWithJS(VISITOR_SESSION_ID);
+      agentUrl = await agent.createAgentUrlWithJS(config.test_env, VISITOR_SESSION_ID);
       log.debug('about to open agent url:' + agentUrl);
       await agent.openAsNew(agentUrl);
 
@@ -187,10 +187,10 @@ describe('Basic video call tests', function () {
       const CONFERENCE_ID = veUtil.makeid(12);
       // generate agent and visitor urls
       log.debug('about to create visitor shorturl');
-      visitorUrl = await agent.createVisitorShortUrl(VISITOR_SESSION_ID, CONFERENCE_ID, PIN);
+      visitorUrl = await agent.createVisitorShortUrl(config.test_env, VISITOR_SESSION_ID, CONFERENCE_ID, PIN);
       log.debug('visitor shorturl: ', visitorUrl);
       log.debug('about to create agent shorturl');
-      agentUrl = await agent.createAgentUrlWithJS(VISITOR_SESSION_ID, 'outbound', CONFERENCE_ID, PIN);
+      agentUrl = await agent.createAgentUrlWithJS(config.test_env, VISITOR_SESSION_ID, 'outbound', CONFERENCE_ID, PIN);
       log.debug('agent shorturl: ', agentUrl);
       log.debug('open agent url');
 
