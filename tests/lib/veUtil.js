@@ -1,7 +1,7 @@
 const uuid = require('uuid');
 const veUtils = {
   // to avoid mant imports and the reason of common usage use uuid from here
-  uuid: uuid,
+  getUUID: uuid.v1,
   /**
    * generate id with the lenght of given number
    * @param {int} num lenght of id
