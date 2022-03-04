@@ -3,7 +3,6 @@ const Page = require('./page');
 const log = require('../lib/logger');
 const util = require('protractor-beautiful-reporter/app/util');
 const until = browser.ExpectedConditions;
-const veUtil = require('../lib/veUtil');
 class Visitor extends Page {
 
   constructor() {

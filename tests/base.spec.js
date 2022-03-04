@@ -29,7 +29,7 @@ describe('Basic video call tests', function () {
 
   describe('Configured with Javascript functions', function () {
     beforeEach(function () {
-      VISITOR_SESSION_ID = veUtil.uuid.v1();
+      VISITOR_SESSION_ID = veUtil.getUUID();
       agentUrl = agent.constructUrl(config.test_env);
       visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
     });
@@ -127,7 +127,7 @@ describe('Basic video call tests', function () {
 
     beforeEach(async function () {
       // renew visitor id
-      VISITOR_SESSION_ID = veUtil.uuid.v1();
+      VISITOR_SESSION_ID = veUtil.getUUID();
       // generate visitor url using new visitor id
       visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
     });
