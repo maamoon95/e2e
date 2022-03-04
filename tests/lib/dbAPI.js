@@ -1,9 +1,6 @@
 const axios = require('axios');
 const log = require('./logger');
 const config = require('./config');
-
-let token;
-
 const TEST_ENV = config.test_env;
 
 /**
@@ -24,12 +21,14 @@ const impersonateCreate = function () {
   });
 };
 
-const impersonate = function () {
-  const url = `${TEST_ENV.baseURL}/api/partners/impersonate/${TEST_ENV.pak}/${TEST_ENV.externalId}/${TEST_ENV.email}`;
+const impersonate = function (confObject) {
+  if (!confObject) {
+    confObject = TEST_ENV;
+  }
+  const url = `${confObject.baseURL}/api/partners/impersonate/${confObject.pak}/${confObject.externalId}/${confObject.email}`;
   return axios.get(url)
     .then(function (result) {
-      token = result.data.token;
-      return token;
+      return result.data.token;
     })
     .catch(function (e) {
       log.error(e.message);
@@ -37,31 +36,20 @@ const impersonate = function () {
     });
 };
 
-const getBrokerageRequest = function () {
+const getBrokerage = function (token) {
   const url = TEST_ENV.baseURL + '/api/brokerages/users/me';
   return axios.get(url, {
     headers: {
       Authorization: `bearer ${token}`
     }
-  });
+  })
+    .catch(function (e) {
+      log.error(e.message);
+      return new Error(e);
+    });
 };
 
-const getBrokerage = function () {
-  if (token) {
-    return getBrokerageRequest();
-  } else {
-    return impersonate()
-      .then(function () {
-        return getBrokerageRequest();
-      })
-      .catch(function (e) {
-        log.error(e.message);
-        return new Error(e);
-      });
-  }
-};
-
-const updateBrokerage = function (update) {
+const updateBrokerageProfile = function (token, update) {
   const url = TEST_ENV.baseURL + '/api/brokerages/users/me';
   return axios({
     url: url,
@@ -72,25 +60,31 @@ const updateBrokerage = function (update) {
       authorization: `bearer ${token}`,
       'content-type': 'application/json'
     }
-  });
+  })
+    .catch(function (e) {
+      log.error(e.message);
+      return new Error(e);
+    });
 };
 
-const updateBrokerageProfile = function (update) {
-  if (token) {
-    return updateBrokerage(update);
-  } else {
-    return impersonate()
-      .then(function () {
-        return updateBrokerage(update);
-      })
-      .catch(function (e) {
-        log.error(e.message);
-        return new Error(e);
-      });
-  }
+module.exports.addShortUrl = async function (token, url, postData) {
+  return axios({
+    url: url,
+    method: 'post',
+    data: JSON.stringify(postData),
+    headers: {
+      authorization: `bearer ${token}`,
+      'content-type': 'application/json'
+    }
+  })
+    .then(function (result) {
+      return result;
+    })
+    .catch(function (e) {
+      throw Error(e);
+    });
 };
 
 module.exports.updateBrokerageProfile = updateBrokerageProfile;
 module.exports.impersonate = impersonate;
 module.exports.getBrokerage = getBrokerage;
-

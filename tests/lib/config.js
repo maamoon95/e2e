@@ -105,7 +105,7 @@ module.exports = {
       {
         type: 'console',
         colorize: true,
-        level: 'trace',
+        level: 'warn',
         timestamp: true
       }
     ]

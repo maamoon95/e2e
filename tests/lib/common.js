@@ -1,8 +1,9 @@
 /* global by */
 const { browser, by, element } = require('protractor');
+const config = require('./config');
 const log = require('./logger');
 const dbAPI = require('./dbAPI');
-const config = require('./config');
+const veUtil = require('./veUtil');
 const assert = require('assert');
 log.init(config.logger);
 
@@ -490,7 +491,7 @@ const common = {
   getBrokerage: function () {
     return dbAPI.getBrokerage()
       .then(function (result) {
-        brokerage = result;
+        brokerage = result.data;
         return brokerage;
       });
   },
