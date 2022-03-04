@@ -21,10 +21,10 @@ describe('Basic video call tests', function () {
 
   beforeAll(async function () {
     // authenticate agent
-    await agent.authenticate();
+    await veUtil.authenticate(config.test_env);
     // Lets prepare some sane settings.
     // Don't obscure view
-    await agent.api.setSafety(true, false);
+    await veUtil.setSafety(true, false);
   });
 
   describe('Configured with Javascript functions', function () {
@@ -82,7 +82,6 @@ describe('Basic video call tests', function () {
       await visitor.localVideoStarted();
       await expect(visitor.localvideo.getAttribute('readyState')).toEqual('4');
       await visitor.remoteVideoStarted();
-
     });
 
     it('should make outbound call, and end it from agent', async function () {
@@ -116,7 +115,7 @@ describe('Basic video call tests', function () {
   describe('Configured with Params scenarious', function () {
     beforeAll(async function () {
       // get brokerage settings
-      const brokerage = await agent.api.getBrokerage();
+      const brokerage = await veUtil.getBrokerage();
       // set config from brokerage settings to generate visitor url
       config.test_env.shortUrl = brokerage.shortUrl;
       config.test_env.tennantId = brokerage.tennantId;
@@ -139,7 +138,7 @@ describe('Basic video call tests', function () {
     });
 
     it('should make inbound call, agent page loads first', async function () {
-      agentUrl = await agent.createAgentUrlWithJS(config.test_env, VISITOR_SESSION_ID);
+      agentUrl = await agent.createAgentUrlWithJS(veUtil.token, config.test_env, VISITOR_SESSION_ID);
       log.debug('about to open agent url:' + agentUrl);
       await agent.openAsNew(agentUrl);
 
@@ -163,7 +162,7 @@ describe('Basic video call tests', function () {
       log.debug('about to open visitor url in a second browser:' + visitorUrl);
       await visitor.openAsNew(visitorUrl);
 
-      agentUrl = await agent.createAgentUrlWithJS(config.test_env, VISITOR_SESSION_ID);
+      agentUrl = await agent.createAgentUrlWithJS(veUtil.token, config.test_env, VISITOR_SESSION_ID);
       log.debug('about to open agent url:' + agentUrl);
       await agent.openAsNew(agentUrl);
 
@@ -186,10 +185,10 @@ describe('Basic video call tests', function () {
       const CONFERENCE_ID = veUtil.makeid(12);
       // generate agent and visitor urls
       log.debug('about to create visitor shorturl');
-      visitorUrl = await agent.createVisitorShortUrl(config.test_env, VISITOR_SESSION_ID, CONFERENCE_ID, PIN);
+      visitorUrl = await veUtil.createVisitorShortUrl(config.test_env, VISITOR_SESSION_ID, CONFERENCE_ID, PIN);
       log.debug('visitor shorturl: ', visitorUrl);
       log.debug('about to create agent shorturl');
-      agentUrl = await agent.createAgentUrlWithJS(config.test_env, VISITOR_SESSION_ID, 'outbound', CONFERENCE_ID, PIN);
+      agentUrl = await agent.createAgentUrlWithJS(veUtil.token, config.test_env, VISITOR_SESSION_ID, 'outbound', CONFERENCE_ID, PIN);
       log.debug('agent shorturl: ', agentUrl);
       log.debug('open agent url');
 

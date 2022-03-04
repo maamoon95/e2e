@@ -1,4 +1,6 @@
 const uuid = require('uuid');
+const dbAPI = require('./dbAPI');
+const log = require('./logger');
 const veUtils = {
   // to avoid mant imports and the reason of common usage use uuid from here
   getUUID: uuid.v1,
@@ -107,7 +109,7 @@ const veUtils = {
     return clientInfo;
   },
   /**
-   * 
+   *
    * @param {Object} confObject our servers configuration object
    * @param {string} conferenceId agent visitor shared conferance id for 3 way call
    * @param {string} encodedClientInfo url parameter for visitor full url
@@ -135,6 +137,83 @@ const veUtils = {
       pin: pin,
       invalidUrl: 'https://www.videoengager.com'
     };
+  },
+
+  // ***** api calls  *****//
+  /**
+   * generate authorizatin token to be able to make api calls
+   */
+  authenticate: async function (confObject) {
+    this.token = await dbAPI.impersonate(confObject);
+    this.confObject = confObject;
+  },
+  /**
+   * return authorization token
+   */
+  token () {
+    return this.api.token;
+  },
+  /**
+   * @returns current agent's settings
+   */
+  getBrokerage: function () {
+    return dbAPI.getBrokerage(this.token)
+      .then(function (result) {
+        return result.data;
+      });
+  },
+  /**
+   * call to set precall
+   * @param {boolean} enable enable or disable precall by flag
+   * @returns promise
+   */
+  setPrecall: function (enable) {
+    return dbAPI.updateBrokerageProfile(this.token, { branding: { visitorShowPrecall: enable } });
+  },
+  /**
+   * call to set safety (anti harassment)
+   * @param {boolean} enable enable or disable functionality
+   * @param {boolean} disableRemoteCamera start with disabled remote camera
+   * @returns promise
+   */
+  setSafety: function (enable, disableRemoteCamera) {
+    return dbAPI.updateBrokerageProfile(this.token, { safety: { enable: enable, disableRemoteCamera: disableRemoteCamera } });
+  },
+  /**
+   *
+   * @param {boolean} blur enable or disable blur func
+   * @returns promise
+   */
+  setBlur: function (blur) {
+    return dbAPI.updateBrokerageProfile(this.token, { branding: { buttons: { 'wd-v-blur': blur } } });
+  },
+  /**
+   * add generated visitor shorturl binded to full url to db
+   * @param {Object} confObject our environment configuration file
+   * @param {string} transferId visitor session id
+   * @param {string} conferenceId agent and visitor shared conferance id for 3 way call
+   * @param {string} pin agent and visitor shared pin code
+   * @param {string} code shorturl code
+   * @returns promise
+   */
+  addShorUrl: async function (confObject, transferId, conferenceId, pin, code) {
+    const encodedClientInfo = this.jsonToBase64(this.generateClientInfo(transferId));
+    const postData = this.generateShortUrlPostData(confObject, conferenceId, encodedClientInfo, code, transferId, pin);
+    log.debug('postData:', JSON.stringify(postData));
+    const url = confObject.baseURL + '/api/shorturls';
+    return dbAPI.addShortUrl(this.token, url, postData);
+  },
+  /**
+   * generate shorturl for visitor and add it to db
+   * @param {string} string VISITOR_SESSION_ID
+   * @param {string} string CONFERENCE_ID
+   * @param {string} string PIN
+   * @returns {string} visitor short url
+   */
+  async createVisitorShortUrl (confObject, VISITOR_SESSION_ID, CONFERENCE_ID, PIN) {
+    const code = this.makeid(6);
+    await this.addShorUrl(confObject, VISITOR_SESSION_ID, CONFERENCE_ID, PIN, code);
+    return confObject.baseURL + '/ve/' + code;
   }
 };
 
