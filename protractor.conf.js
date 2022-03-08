@@ -19,7 +19,7 @@ const protractorConfig = {
 
   // list of files / patterns to load in the browser
   specs: [
-    'tests/base.spec.js'
+    'tests/base.genesys.spec.js'
   ],
   // Patterns to exclude.
   exclude: [],
@@ -127,7 +127,9 @@ protractorConfig.multiCapabilities = [/* {
         '--allow-file-access-from-files',
         '--disable-web-security',
         '--disable-infobars',
-        '--disable-extensions'
+        '--disable-extensions',
+        '--allow-running-insecure-content',
+        '--ignore-certificate-errors'
       ],
       prefs: {
         VideoCaptureAllowedUrls: ['*'],
