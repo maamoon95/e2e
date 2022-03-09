@@ -9,23 +9,56 @@ class Genesys extends Agent {
     this.genesysIframe = null;
   }
 
-  get startVideoButton () { return element(by.id('startVideoButton')); }
-  get acceptClickToVideoButton () { return element(by.id('acceptClickToVideoButton')); }
+  /**
+   * return "Start Video Button" html button element as selemium object
+   */
+  get startVideoButton () {
+    return element(by.id('startVideoButton'));
+  }
 
-  get inviteUrl () { return element(by.className('invite_url')); }
+  /**
+   * return "Pickup Video Chat" html button element as selemium object
+   */
+  get acceptClickToVideoButton () {
+    return element(by.id('acceptClickToVideoButton'));
+  }
 
+  /**
+   * get invitation url input as selemiunm object
+   */
+  get inviteUrl () {
+    return element(by.className('invite_url'));
+  }
+
+  /**
+   * check if "invite for video chat" button is available
+   * @returns promise
+   */
   async c2vAvailable () {
     return browser.wait(until.visibilityOf(element(by.id('startVideoButton'))), 20000, 'startVideoButton does not became available in 20s');
   }
 
+  /**
+   * check if "pickup video chat" button is available
+   * @returns promise
+   */
   async pickupAvailable () {
     return browser.wait(until.visibilityOf(element(by.id('acceptClickToVideoButton'))), 20000, 'acceptClickToVideoButton does not became available in 20s');
   }
 
+  /**
+   * check if agent iframe is created
+   * @returns promise
+   */
   async iframeCreated () {
     return browser.wait(until.visibilityOf(element(by.id('genesysIframe'))), 20000, 'genesysIframe does not became available in 20s');
   }
 
+  /**
+   * check if genesys page is authorized by checking hash (#) in the ne of the url
+   * genesys page redirects back with hash to genesys page if authorized
+   * @returns promise
+   */
   async authorized () {
     return browser.wait(async function () {
       const url = await browser.getCurrentUrl();
@@ -36,6 +69,11 @@ class Genesys extends Agent {
     }, 20000, 'not authorized in 20s');
   }
 
+  /**
+   * construct genesys url with environment, pak and client id for authentication
+   * @param {Object} confObject environment configuration object
+   * @returns {string} genesys page url
+   */
   constructUrl (confObject) {
     let url = confObject.baseURL + '/static/genesys.purecloud.html?';
     const genesysParams = {
@@ -50,6 +88,10 @@ class Genesys extends Agent {
     return url;
   }
 
+  /**
+   * get genesys app generated visitor url from input
+   * @returns {Promise} visitor url as promise
+   */
   async getVisitorUrl () {
     return browser.wait(async function () {
       const value = await element(by.className('invite_url')).getAttribute('value');
@@ -60,6 +102,9 @@ class Genesys extends Agent {
     });
   }
 
+  /**
+   * switch to agent iframe
+   */
   async switchToIframe () {
     await this.switchTo();
     await browser.switchTo().frame(0);

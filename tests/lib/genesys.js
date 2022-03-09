@@ -1,3 +1,6 @@
+/**
+ * this page consist of genesys mock responses
+ */
 const genesys = {
   organization: {
     id: '3ce84f47-4e65-4756-a815-67a2b32e58b8',

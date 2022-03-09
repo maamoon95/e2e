@@ -33,6 +33,7 @@ describe('genesys page tests', function () {
     // start socket server for mock socket connection
     await mockProxy.startSocketServer(SOCKET_SERVER_PORT);
 
+    // authenticate and set to default db
     await veUtil.authenticate();
     await veUtil.setPrecall(false);
     await veUtil.setPrecallWorkflow(false);
@@ -45,6 +46,7 @@ describe('genesys page tests', function () {
   });
 
   afterEach(async function () {
+    // close agent and visitor pages after the test
     await genesys.switchToIframe();
     await genesys.hangup.click();
     await genesys.confirm.click();
@@ -61,7 +63,7 @@ describe('genesys page tests', function () {
     await genesys.authorized();
     // check is websocket conencted
     await mockProxy.isConnected();
-    // check c2v button
+    // check c2v button and click it
     await genesys.c2vAvailable();
     await genesys.startVideoButton.click();
     // check if iframe created
@@ -85,23 +87,26 @@ describe('genesys page tests', function () {
   });
 
   it('genesys page inbound connection test', async function () {
+    // set mockProxy server to response like there are an active interaction
     mockProxy.setSelectedChat(1);
     mockProxy.setInteractionId(VISITOR_SESSION_ID);
+    // open visitor page
     await visitor.openAsNew(visitorUrl);
 
     // construct genesys url by pak, env, clientId
-    // already authorized
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
     await genesys.openAsNew(genesysUrl);
-    // check is websocket conencted
+    // genesys page already authorized in the previous test
+    // check if websocket conencted
     await mockProxy.isConnected();
-    // check pickup button
+    // check pickup button and click it
     await genesys.pickupAvailable();
     await genesys.acceptClickToVideoButton.click();
     // check if iframe created
     await genesys.iframeCreated();
     await genesys.switchToIframe();
+    // check genesys page local stream
     expect(await genesys.localVideoStarted()).toBeTruthy();
     await genesys.remoteVideoStarted();
     await expect(genesys.localvideo.getAttribute('readyState')).toEqual('4');

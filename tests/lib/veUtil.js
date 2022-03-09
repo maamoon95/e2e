@@ -170,10 +170,19 @@ const veUtils = {
   setPrecall: function (enable) {
     return dbAPI.updateBrokerageProfile(this.token, { branding: { visitorShowPrecall: enable } });
   },
-
+  /**
+   * set enforce Pre-call in outbound scenario
+   * @param {boolean} enable enable or disable Pre-call in outbound
+   * @returns promise
+   */
   setPrecallWorkflow: function (enable) {
     return dbAPI.updateBrokerageProfile(this.token, { enablePrecallWorkflow: enable });
   },
+  /**
+   * set videoengager genesys app page thema
+   * @param {boolean} enable enable or disable
+   * @returns promise
+   */
   setNewTheme: function (enable) {
     return dbAPI.updateBrokerageProfile(this.token, { newTheme: enable });
   },

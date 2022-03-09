@@ -13,15 +13,37 @@ let selectedChat = 0;
 
 let connection;
 let interactionId;
-class Proxy {
+
+/**
+ * MockProxy Class contains proxy servers, socket server and http server
+ * genesys responses are redirected to http server by proxy servers
+ * web socket server given by genesys mocked by local web socket server
+ */
+class MockProxy {
+  /**
+   * set chat responses
+   * 0 for no interaction
+   * 1 for available interaction to setup pickup button
+   * @param {int} value select 0 for empty chat 1 for existed chat
+   */
   setSelectedChat (value) {
     selectedChat = value;
   }
 
+  /**
+   * set interaction id to setup inbound call - pickup button in genesys
+   * @param {string} value visitor's interactionID
+   */
   setInteractionId (value) {
     interactionId = value;
   }
 
+  /**
+   * set port number for ssl proxy server.
+   * it will listen 443 and will redirect messages to given port number in local host
+   * @param {int} port port number for local mock server
+   * @returns promise
+   */
   startSSlProxyServer (port = 9001) {
     return new Promise(function (resolve, reject) {
       try {
@@ -40,6 +62,11 @@ class Proxy {
     });
   }
 
+  /**
+   * it will listen 80 port and redirect messages to given port
+   * @param {int} port port number for local mock server
+   * @returns promise
+   */
   startHttpProxyServer (port = 9001) {
     return new Promise(function (resolve, reject) {
       try {
@@ -52,6 +79,11 @@ class Proxy {
     });
   }
 
+  /**
+   * set your local mock web socket servers port number
+   * @param {int} port mock socket server port number
+   * @returns promize
+   */
   startSocketServer (port = 9898) {
     return new Promise(function (resolve, reject) {
       try {
@@ -81,6 +113,12 @@ class Proxy {
     });
   }
 
+  /**
+   * local mock http server
+   * @param {*} accessToken genesys mock auth token. it is given as auth token by genesys
+   * @param {*} port this local mock server's port number
+   * @returns promise
+   */
   startHttpServer (accessToken, port = 9001) {
     return new Promise(function (resolve, reject) {
       try {
@@ -175,11 +213,6 @@ class Proxy {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(genesysResponses.subscriptions, true, 2));
             res.end();
-            /*
-            connection.sendUTF(JSON.stringify(genesysResponses.wsMessages[0]));
-            connection.sendUTF(JSON.stringify(genesysResponses.wsMessages[1]));
-            connection.sendUTF(JSON.stringify(genesysResponses.wsMessages[2]));
-            */
           }
 
           if (req.method === 'PUT' && path === 'subscriptions') {
@@ -189,7 +222,6 @@ class Proxy {
             res.write(JSON.stringify(genesysResponses.subscriptions, true, 2));
             res.end();
           }
-          // different resposnses based on the case
           if (req.method === 'GET' && req.url.indexOf('api/v2/users/me?expand=chats') !== -1) {
             console.log('retrive chats');
             res.writeHead(200, header);
@@ -221,21 +253,28 @@ class Proxy {
     });
   }
 
+  /**
+   * check if websocked ever connected in every half seconds
+   * @param {number} timeout timeout in miliseconds
+   * @returns promise
+   */
   isConnected (timeout = 10000) {
     let count = timeout / 500;
     return new Promise(function (resolve, reject) {
       const interval = setInterval(function () {
         if (socketConnected === true) {
           clearInterval(interval);
+          socketConnected = false;
           resolve();
-          count -= 1;
+          return;
         }
         if (count === 0) {
           reject(Error('timeout reached'));
         }
+        count -= 1;
       }, 500);
     });
   }
 }
 
-module.exports = Proxy;
+module.exports = MockProxy;
