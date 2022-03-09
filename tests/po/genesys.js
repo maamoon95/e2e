@@ -10,19 +10,30 @@ class Genesys extends Agent {
   }
 
   get startVideoButton () { return element(by.id('startVideoButton')); }
+  get acceptClickToVideoButton () { return element(by.id('acceptClickToVideoButton')); }
 
   get inviteUrl () { return element(by.className('invite_url')); }
 
   async c2vAvailable () {
-    return browser.wait(until.visibilityOf(element(by.id('startVideoButton' + this.tennantId))), 20000, 'startVideoButton does not became available in 20s');
+    return browser.wait(until.visibilityOf(element(by.id('startVideoButton'))), 20000, 'startVideoButton does not became available in 20s');
   }
 
-  async ClickStartVideo () {
-    return browser.wait(until.visibilityOf(element(by.id('startVideoButton' + this.tennantId))), 20000, 'startVideoButton does not became available in 20s');
+  async pickupAvailable () {
+    return browser.wait(until.visibilityOf(element(by.id('acceptClickToVideoButton'))), 20000, 'acceptClickToVideoButton does not became available in 20s');
   }
 
   async iframeCreated () {
     return browser.wait(until.visibilityOf(element(by.id('genesysIframe'))), 20000, 'genesysIframe does not became available in 20s');
+  }
+
+  async authorized () {
+    return browser.wait(async function () {
+      const url = await browser.getCurrentUrl();
+      if (url && url.substring(url.length - 1, url.length) === '#') {
+        return true;
+      }
+      return false;
+    }, 20000, 'not authorized in 20s');
   }
 
   constructUrl (confObject) {
@@ -35,6 +46,7 @@ class Genesys extends Agent {
       clientId: confObject.clientId
     };
     url += veUtil.generateUrlParamters(genesysParams);
+    console.log('constructUrl', url);
     return url;
   }
 

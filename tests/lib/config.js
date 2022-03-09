@@ -16,6 +16,7 @@ const environments = {
     baseURL: 'https://dev.videoengager.com',
     organizationId: '327d10eb-0826-42cd-89b1-353ec67d33f8',
     deploymentId: 'c2eaaa5c-d755-4e51-9136-b5ee86b92af3',
+    clientId: 'b104c6b3-d72a-402b-a22d-bb67bf989525',
     tennantId: 'test_tenant',
     environment: 'https://api.mypurecloud.com.au',
     queue: 'video'
@@ -55,6 +56,7 @@ const environments = {
     baseURL: 'https://staging.leadsecure.com',
     organizationId: 'f6668859-042a-4b04-b998-3e3261fb3dd4',
     deploymentId: '1b4b1124-b51c-4c38-899f-3a90066c76cf',
+    clientId: 'a7bdc6f8-c1fa-4662-b032-1da094e424ea',
     tennantId: 'IF9UduUVaQ3ldy8N',
     environment: 'https://api.mypurecloud.de',
     queue: 'Support'

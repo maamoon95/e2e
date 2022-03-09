@@ -170,6 +170,13 @@ const veUtils = {
   setPrecall: function (enable) {
     return dbAPI.updateBrokerageProfile(this.token, { branding: { visitorShowPrecall: enable } });
   },
+
+  setPrecallWorkflow: function (enable) {
+    return dbAPI.updateBrokerageProfile(this.token, { enablePrecallWorkflow: enable });
+  },
+  setNewTheme: function (enable) {
+    return dbAPI.updateBrokerageProfile(this.token, { newTheme: enable });
+  },
   /**
    * call to set safety (anti harassment)
    * @param {boolean} enable enable or disable functionality
