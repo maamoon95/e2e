@@ -84,7 +84,6 @@ class Genesys extends Agent {
       clientId: confObject.clientId
     };
     url += veUtil.generateUrlParamters(genesysParams);
-    console.log('constructUrl', url);
     return url;
   }
 

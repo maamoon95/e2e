@@ -5,6 +5,9 @@ const httpProxy = require('http-proxy');
 const veUtil = require('./veUtil');
 const config = require('./config');
 const log = require('./logger');
+
+const { match } = require("path-to-regexp")
+
 log.init(config.logger);
 
 let socketConnected = false;
@@ -19,6 +22,8 @@ const genesysResponses = require('./genesys');
  * web socket server given by genesys mocked by local web socket server
  */
 class MockProxy {
+
+  static  mockObjects = [];
   /**
    * set chat responses
    * 0 for no interaction
@@ -111,6 +116,21 @@ class MockProxy {
         reject(new Error(e));
       }
     });
+  };
+
+  /**
+   * Add/replace mock resp.
+   */
+  mockIt (rule, response) {
+    let index = -1;
+    if( (index = MockProxy.mockObjects.findIndex( function (element) {
+      return element.rule.path === rule.path;
+    })) !== -1) {
+      MockProxy.mockObjects[index] = {rule:rule, resp: response};
+    } else {
+      MockProxy.mockObjects.push({rule:rule, resp: response});
+    }
+    log.debug('Mocked:' + JSON.stringify(rule) + ' With response:' + JSON.stringify(response));
   }
 
   /**
@@ -131,9 +151,21 @@ class MockProxy {
           'access-control-max-age': 2592000
         };
         http.createServer(function (req, res) {
+          log.debug("REQUEST rcvd===> Method:" + req.method + " PATH:" + req.url);
+
           const urlArray = req.url.split('/');
           const path = urlArray[urlArray.length - 1];
-          if (req.url.indexOf('oauth') !== -1) {
+          const request = req;
+          const mresp = MockProxy.mockObjects.find(function (element) {
+            const rule = match(element.rule.path);
+            return rule(req.url) && rule.path === req.path;
+          });
+          if(mresp) {
+            log.debug("Got mock?" + JSON.stringify(mresp));
+            res.writeHead(200, header);
+            res.write(JSON.stringify(mresp.resp, true, 2));
+            res.end();
+          } else if (req.url.indexOf('oauth') !== -1) {
             log.debug('Genesys Authorization');
             res.writeHead(200, header);
             res.writeHead(302, { location: config.test_env.baseURL + '/static/genesys.purecloud.html#access_token=' + accessToken + '&expires_in=86399&token_type=bearer' });
@@ -231,7 +263,7 @@ class MockProxy {
             res.write(JSON.stringify(genesysResponses.messages, true, 2));
             res.end();
           } else {
-            log.error('UNHANDLEDMETHOD' + req.method + req.url);
+            log.warn('NON MOCKED Method' + req.method + req.url);
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end();

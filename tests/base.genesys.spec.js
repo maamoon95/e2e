@@ -7,6 +7,7 @@ log.init(config.logger);
 const MockProxy = require('./lib/mockProxy');
 const Genesys = require('./po/genesys');
 const Visitor = require('./po/visitor');
+const genesysResponses = require('./lib/genesys');
 
 describe('genesys page tests in iframe mode', function () {
   // prepare genesys page and visitor page instances
@@ -20,6 +21,13 @@ describe('genesys page tests in iframe mode', function () {
   beforeAll(async function () {
     const PROXY_SERVER_PORT = 9001;
     const SOCKET_SERVER_PORT = 9898;
+
+    // prepare mocks
+    const userResp = genesysResponses.userResponse;
+    userResp.organization.id = config.test_env.organizationId;
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, userResp);
+    mockProxy.mockIt({ path: '/api/v2/conversations/chats', method: 'GET' }, genesysResponses.chats[0]);
+    mockProxy.mockIt({ path: '/api/v2/users/:userId/presences/PURECLOUD', method: 'PATCH' }, genesysResponses.purecloud);
     // start 80 port proxy server
     await mockProxy.startHttpProxyServer(PROXY_SERVER_PORT);
     // start 443 port proxy server
@@ -28,7 +36,6 @@ describe('genesys page tests in iframe mode', function () {
     await mockProxy.startHttpServer(config.test_env, veUtil.getUUID(), PROXY_SERVER_PORT);
     // start socket server for mock socket connection
     await mockProxy.startSocketServer(SOCKET_SERVER_PORT);
-
     // authenticate and set to default db
     await veUtil.authenticate();
     await veUtil.setPrecall(false);
@@ -48,8 +55,7 @@ describe('genesys page tests in iframe mode', function () {
     await genesys.switchToIframe();
     await genesys.hangup.click();
     await genesys.confirm.click();
-    await visitor.close();
-    await genesys.close();
+    // await genesys.close();
   });
 
   it('outbound call: invite visitor, agent is in iframe', async function () {
@@ -86,7 +92,9 @@ describe('genesys page tests in iframe mode', function () {
 
   it('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
     // set mockProxy server to response like there are an active interaction
-    mockProxy.setSelectedChat(1);
+    // replace chat mock with non-empty resp.
+    mockProxy.mockIt({ path: '/api/v2/conversations/chats', method: 'GET' }, genesysResponses.chats[1]);
+
     mockProxy.setInteractionId(VISITOR_SESSION_ID);
     // open visitor page
     await visitor.openAsNew(visitorUrl);
