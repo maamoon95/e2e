@@ -8,7 +8,7 @@ const HtmlReporter = require('protractor-beautiful-reporter');
 const protractorConfig = {
   // The timeout for each script run on the browser. This should be longer
   // than the maximum time your application needs to stabilize between tasks.
-  allScriptsTimeout: 110000,
+  allScriptsTimeout: 30000,
   // A base URL for your application under test. Calls to protractor.get()
   // with relative paths will be prepended with this.
   baseUrl: config.test_env.baseURL,
@@ -19,7 +19,7 @@ const protractorConfig = {
 
   // list of files / patterns to load in the browser
   specs: [
-    'tests/base.genesys.spec.js'
+    'tests/base.spec.js'
   ],
   // Patterns to exclude.
   exclude: [],
@@ -41,7 +41,7 @@ const protractorConfig = {
   //
   // See the full list at https://github.com/juliemr/minijasminenode
   jasmineNodeOpts: {
-    defaultTimeoutInterval: 30000
+    defaultTimeoutInterval: 300000
   },
   onPrepare: function () {
     browser.driver.sleep(1000);

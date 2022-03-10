@@ -1,4 +1,5 @@
 const veUtil = require('./lib/veUtil');
+const config = require('./lib/config');
 
 // create proxy server
 const MockProxy = require('./lib/mockProxy');
@@ -9,6 +10,6 @@ mockProxy.startHttpProxyServer();
 // start 443 port proxy server
 mockProxy.startSSlProxyServer();
 // start https server for mock responses
-mockProxy.startHttpServer(veUtil.getUUID());
+mockProxy.startHttpServer(config.test_env, veUtil.getUUID());
 // start socket server for mock socket connection
 mockProxy.startSocketServer();

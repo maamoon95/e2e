@@ -1,6 +1,7 @@
 const uuid = require('uuid');
 const dbAPI = require('./dbAPI');
 const log = require('./logger');
+
 const veUtils = {
   // to avoid mant imports and the reason of common usage use uuid from here
   getUUID: uuid.v1,
@@ -177,6 +178,17 @@ const veUtils = {
    */
   setPrecallWorkflow: function (enable) {
     return dbAPI.updateBrokerageProfile(this.token, { enablePrecallWorkflow: enable });
+  },
+  /**
+   * set genesys agent creation mode as iframe or popup
+   * @param {boolean} enable enable or disable
+   * @returns promise
+   */
+  setPopup: function (enable) {
+    return dbAPI.updateBrokerageProfile(this.token, { isPopup: enable });
+  },
+  setInviteUrl: function (url) {
+    return dbAPI.updateBrokerageProfile(this.token, { branding: { inviteUrl: url } });
   },
   /**
    * set videoengager genesys app page thema
