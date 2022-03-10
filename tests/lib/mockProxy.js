@@ -95,7 +95,7 @@ class MockProxy {
         wsServer.on('request', function (request) {
           connection = request.accept(null, request.origin);
           connection.on('message', function (data) {
-            console.log('Received data:', data.utf8Data);
+            log.debug('Received data:', data.utf8Data);
             const jsonData = JSON.parse(data.utf8Data);
             if (jsonData.message === 'ping') {
               connection.sendUTF(JSON.stringify({ eventBody: { message: 'pong' }, topicName: 'channel.metadata' }));
@@ -134,66 +134,66 @@ class MockProxy {
           const urlArray = req.url.split('/');
           const path = urlArray[urlArray.length - 1];
           if (req.url.indexOf('oauth') !== -1) {
-            console.log('Genesys Authorization');
+            log.debug('Genesys Authorization');
             res.writeHead(200, header);
             res.writeHead(302, { location: config.test_env.baseURL + '/static/genesys.purecloud.html#access_token=' + accessToken + '&expires_in=86399&token_type=bearer' });
             res.end();
           } else if (req.method === 'PATCH' && path === 'PURECLOUD') {
-            console.log('Genesys Users Presence');
+            log.debug('Genesys Users Presence');
             res.writeHead(200, header);
             res.write(JSON.stringify(genesysResponses.purecloud, true, 2));
             res.end();
           } else if (req.method === 'OPTIONS') {
-            console.log('OPTIONS preflight of', req.url);
+            log.debug('OPTIONS preflight of', req.url);
             res.writeHead(200, header);
             res.end();
           } else if (req.method === 'GET' && path === 'me?expand=organization') {
-            console.log('retrive organization');
+            log.debug('retrive organization');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             genesysResponses.userResponse.organization.id = confObject.organizationId;
             res.write(JSON.stringify(genesysResponses.userResponse, true, 2));
             res.end();
           } else if (req.method === 'GET' && path === 'me?expand=conversationSummary') {
-            console.log('retrive conversationSummary');
+            log.debug('retrive conversationSummary');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(genesysResponses.conversationSummary, true, 2));
             res.end();
           } else if (req.method === 'GET' && path === 'conversations') {
-            console.log('retrive conversations');
+            log.debug('retrive conversations');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(genesysResponses.conversations, true, 2));
             res.end();
           } else if (req.method === 'GET' && path === '1c1a063b-45bf-4719-9127-7bca923118c1') {
-            console.log('retrive conversation ' + '1c1a063b-45bf-4719-9127-7bca923118c1');
+            log.debug('retrive conversation ' + '1c1a063b-45bf-4719-9127-7bca923118c1');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(genesysResponses.conversationChat, true, 2));
             res.end();
           } else if (req.method === 'GET' && path === 'd36875ce-1bb6-4ad7-8ff9-5af8e727bd88') {
-            console.log('retrive participants ' + 'd36875ce-1bb6-4ad7-8ff9-5af8e727bd88');
+            log.debug('retrive participants ' + 'd36875ce-1bb6-4ad7-8ff9-5af8e727bd88');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(genesysResponses.participants, true, 2));
             res.end();
           } else if (req.method === 'GET' && path === 'channels') {
-            console.log('retrive channels');
+            log.debug('retrive channels');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             // res.write(JSON.stringify({ entities: [] }, true, 2));
             res.write(JSON.stringify(genesysResponses.getChannels, true, 2));
             res.end();
           } else if (req.method === 'POST' && path === 'channels') {
-            console.log('put channels');
+            log.debug('put channels');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             genesysResponses.channels.connectUri = `ws://localhost:${9898}/`;
             res.write(JSON.stringify(genesysResponses.channels, true, 2));
             res.end();
           } else if (req.method === 'GET' && path === 'subscriptions') {
-            console.log('retrive subscriptions');
+            log.debug('retrive subscriptions');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(genesysResponses.subscriptions, true, 2));
@@ -204,7 +204,7 @@ class MockProxy {
             connection.sendUTF(JSON.stringify(genesysResponses.wsMessages[2]));
             */
           } else if (req.method === 'PUT' && path === 'subscriptions') {
-            console.log('put subscriptions');
+            log.debug('put subscriptions');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(genesysResponses.subscriptions, true, 2));
@@ -212,26 +212,26 @@ class MockProxy {
           }
           // different resposnses based on the case
           else if (req.method === 'GET' && req.url.indexOf('api/v2/users/me?expand=chats') !== -1) {
-            console.log('retrive chats');
+            log.debug('retrive chats');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(genesysResponses.chats[selectedChat], true, 2));
             res.end();
           } else if (req.method === 'GET' && path === 'chats') {
-            console.log('retrive chats');
+            log.debug('retrive chats');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(genesysResponses.chats[selectedChat], true, 2));
             res.end();
           } else if (req.method === 'GET' && path === 'messages') {
-            console.log('retrive messages');
+            log.debug('retrive messages');
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: interactionId });
             res.write(JSON.stringify(genesysResponses.messages, true, 2));
             res.end();
           } else {
-            console.error('UNHANDLEDMETHOD' + req.method + req.url);
+            log.error('UNHANDLEDMETHOD' + req.method + req.url);
             res.writeHead(200, header);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end();

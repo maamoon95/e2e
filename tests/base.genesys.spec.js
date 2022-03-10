@@ -72,7 +72,6 @@ describe('genesys page tests in iframe mode', function () {
     // open visitor page and join to the call
     await visitor.openAsNew(visitorUrl);
     // switch to genesys page and verify we have local and remote video
-    await browser.sleep(300000);
     await genesys.switchToIframe();
     expect(await genesys.localVideoStarted()).toBeTruthy();
     await genesys.remoteVideoStarted();
@@ -85,7 +84,7 @@ describe('genesys page tests in iframe mode', function () {
     await visitor.remoteVideoStarted();
   });
 
-  xit('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
+  it('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
     // set mockProxy server to response like there are an active interaction
     mockProxy.setSelectedChat(1);
     mockProxy.setInteractionId(VISITOR_SESSION_ID);

@@ -19,7 +19,8 @@ const environments = {
     clientId: 'b104c6b3-d72a-402b-a22d-bb67bf989525',
     tennantId: 'test_tenant',
     environment: 'https://api.mypurecloud.com.au',
-    queue: 'video'
+    queue: 'video',
+    logLevel: 'debug'
   },
   test: {
     pak: 'DEV2',
@@ -39,7 +40,8 @@ const environments = {
     clientId: 'b104c6b3-d72a-402b-a22d-bb67bf989525',
     tennantId: 'test_tenant',
     environment: 'https://api.mypurecloud.com.au',
-    queue: 'video'
+    queue: 'video',
+    logLevel: 'debug'
   },
   staging: {
     pak: 'c50859ee-fda4-258b-6c34-d77566373a7b',
@@ -59,7 +61,8 @@ const environments = {
     clientId: 'a7bdc6f8-c1fa-4662-b032-1da094e424ea',
     tennantId: 'IF9UduUVaQ3ldy8N',
     environment: 'https://api.mypurecloud.de',
-    queue: 'Support'
+    queue: 'Support',
+    logLevel: 'warn'
   },
   production: {
     pak: 'b17cd9a8-e00d-7e98-2894-d33e473e2bbb',
@@ -78,7 +81,8 @@ const environments = {
     deploymentId: '973f8326-c601-40c6-82ce-b87e6dafef1c',
     tennantId: '3X0eK2gclYkIML92',
     environment: 'https://api.mypurecloud.com',
-    queue: 'TestQueue'
+    queue: 'TestQueue',
+    logLevel: 'warn'
   }
 };
 const env = process.env.NODE_ENV || 'test';
@@ -108,7 +112,7 @@ module.exports = {
       {
         type: 'console',
         colorize: true,
-        level: 'warn',
+        level: environments[env].logLevel,
         timestamp: true
       }
     ]
