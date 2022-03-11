@@ -1,8 +1,10 @@
 const { browser, element, by } = require('protractor');
-const log = require('../lib/logger');
 const veUtil = require('../lib/veUtil');
 const Agent = require('./agent');
 const until = browser.ExpectedConditions;
+const config = require('./config');
+const log = require('./logger');
+log.init(config.logger);
 class Genesys extends Agent {
   constructor () {
     super();
@@ -57,12 +59,20 @@ class Genesys extends Agent {
   /**
    * check if genesys page is authorized by checking hash (#) in the ne of the url
    * genesys page redirects back with hash to genesys page if authorized
+   * it saves accessToken to localstorage(puretoken)
+   * @param {Object} puretoken check authorize by accessToken
    * @returns promise
    */
-  async authorized () {
+  async authorized (puretoken = '') {
     return browser.wait(async function () {
       const url = await browser.getCurrentUrl();
+      const localStoragePuretoken = await browser.executeScript('return window.localStorage.getItem("puretoken")');
       if (url && url.substring(url.length - 1, url.length) === '#') {
+        log.debug('verify authorize by redirect');
+        return true;
+      }
+      if (localStoragePuretoken === puretoken) {
+        log.debug('verify authorize by token in localstorage');
         return true;
       }
       return false;

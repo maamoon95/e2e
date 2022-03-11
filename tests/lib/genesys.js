@@ -19,7 +19,7 @@ const CUSTOMER_ATTRIBUTES = {
 const genesys = {
   userResponse: {
     organization: {
-      id: 'ORGANIZATIO_ID'
+      id: 'ORGANIZATION_ID'
     },
     name: 'Slav',
     division: {
@@ -51,6 +51,7 @@ const genesys = {
   getChannels: {
     entities: [
       {
+        id: 'streaming-CHANNEL-ID',
         connectUri: 'ws://localhost'
       }
     ]

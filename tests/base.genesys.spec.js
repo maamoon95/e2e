@@ -17,23 +17,60 @@ describe('genesys page tests in iframe mode', function () {
   const mockProxy = new MockProxy();
   let VISITOR_SESSION_ID;
   let visitorUrl;
+  const PROXY_SERVER_PORT = 9001;
+  const SOCKET_SERVER_PORT = 9898;
+  const accessToken = veUtil.getUUID();
+  const channelId = veUtil.getUUID();
+  const genesysPageLocation = config.test_env.baseURL + '/static/genesys.purecloud.html';
 
   beforeAll(async function () {
-    const PROXY_SERVER_PORT = 9001;
-    const SOCKET_SERVER_PORT = 9898;
-
     // prepare mocks
-    const userResp = genesysResponses.userResponse;
-    userResp.organization.id = config.test_env.organizationId;
-    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, userResp);
-    mockProxy.mockIt({ path: '/api/v2/conversations/chats', method: 'GET' }, genesysResponses.chats[0]);
+    genesysResponses.userResponse.organization.id = config.test_env.organizationId;
+    genesysResponses.channels.connectUri = `ws://localhost:${SOCKET_SERVER_PORT}/`;
+    genesysResponses.channels.id = channelId;
+    genesysResponses.getChannels.entities[0].connectUri = `ws://localhost:${SOCKET_SERVER_PORT}/`;
+    genesysResponses.getChannels.entities[0].id = channelId;
+    genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
+
+    const authURLParams = veUtil.generateUrlParamters({
+      response_type: 'token',
+      client_id: config.test_env.clientId,
+      redirect_uri: encodeURIComponent(genesysPageLocation)
+    });
+    const authHeader = {
+      location: genesysPageLocation + '#access_token=' + accessToken + '&expires_in=86399&token_type=bearer'
+    };
+
+    // mandatory
+    mockProxy.mockIt({ path: '/oauth/authorize\\?' + authURLParams, method: 'GET' }, null, 302, authHeader);
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
     mockProxy.mockIt({ path: '/api/v2/users/:userId/presences/PURECLOUD', method: 'PATCH' }, genesysResponses.purecloud);
+    mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'POST' }, genesysResponses.channels);
+    mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'GET' }, genesysResponses.getChannels);
+    // not mandaroty
+    /*
+    mockProxy.mockIt({ path: '/api/v2/conversations/chats', method: 'GET' }, genesysResponses.chats[0]);
+    mockProxy.mockIt({ path: '/api/v2/conversations', method: 'GET' }, genesysResponses.conversations);
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=chats', method: 'GET' }, genesysResponses.chats[0]);
+    */
+    // not used in this tests
+    /*
+    mockProxy.mockIt({ path: '/AGENT_PARTICIPANT_ID', method: 'GET' }, genesysResponses.participants);
+    mockProxy.mockIt({ path: '/CONVERSATION_ID', method: 'GET' }, genesysResponses.conversationChat);
+    */
+    // need for inbound call
+    /*
+    mockProxy.mockIt({ path: '/api/v2/notifications/channels/' + channelId + '/subscriptions', method: 'GET' }, genesysResponses.subscriptions);
+    mockProxy.mockIt({ path: '/api/v2/notifications/channels/' + channelId + '/subscriptions', method: 'PUT' }, genesysResponses.subscriptions);
+    */
+
     // start 80 port proxy server
     await mockProxy.startHttpProxyServer(PROXY_SERVER_PORT);
     // start 443 port proxy server
     await mockProxy.startSSlProxyServer(PROXY_SERVER_PORT);
     // start https server for mock responses
-    await mockProxy.startHttpServer(config.test_env, veUtil.getUUID(), PROXY_SERVER_PORT);
+    await mockProxy.startHttpServer(PROXY_SERVER_PORT);
     // start socket server for mock socket connection
     await mockProxy.startSocketServer(SOCKET_SERVER_PORT);
     // authenticate and set to default db
@@ -42,7 +79,7 @@ describe('genesys page tests in iframe mode', function () {
     await veUtil.setPrecallWorkflow(false);
     await veUtil.setNewTheme(false);
     await veUtil.setPopup(false);
-    // await veUtil.setInviteUrl('https://staging.videoengager.com/');
+    await veUtil.setInviteUrl(config.test_env.baseURL);
   });
 
   beforeEach(async function () {
@@ -55,7 +92,8 @@ describe('genesys page tests in iframe mode', function () {
     await genesys.switchToIframe();
     await genesys.hangup.click();
     await genesys.confirm.click();
-    // await genesys.close();
+    await genesys.close();
+    await visitor.close();
   });
 
   it('outbound call: invite visitor, agent is in iframe', async function () {
@@ -93,17 +131,24 @@ describe('genesys page tests in iframe mode', function () {
   it('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
     // set mockProxy server to response like there are an active interaction
     // replace chat mock with non-empty resp.
+    genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
+    // mandatory
     mockProxy.mockIt({ path: '/api/v2/conversations/chats', method: 'GET' }, genesysResponses.chats[1]);
+    mockProxy.mockIt({ path: '/api/v2/conversations/chats/' + genesysResponses.chats[1].entities[0].id + '/messages', method: 'GET' }, genesysResponses.messages);
+    // mandatory and added for this test, not mandatory for outbound test
+    mockProxy.mockIt({ path: '/api/v2/notifications/channels/' + channelId + '/subscriptions', method: 'GET' }, genesysResponses.subscriptions);
+    mockProxy.mockIt({ path: '/api/v2/notifications/channels/' + channelId + '/subscriptions', method: 'PUT' }, genesysResponses.subscriptions);
+    // not mandatory
+    // mockProxy.mockIt({ path: '/api/v2/conversations/chats/' + genesysResponses.chats[1].entities[0].id, method: 'GET' }, genesysResponses.messages);
 
-    mockProxy.setInteractionId(VISITOR_SESSION_ID);
     // open visitor page
     await visitor.openAsNew(visitorUrl);
-
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
     await genesys.openAsNew(genesysUrl);
-    // genesys page already authorized in the previous test
+    // test localstorage token
+    await genesys.authorized(accessToken);
     // check if websocket conencted
     await mockProxy.isConnected();
     // check pickup button and click it

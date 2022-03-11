@@ -2,45 +2,32 @@ const fs = require('fs');
 const WebSocketServer = require('websocket').server;
 const http = require('http');
 const httpProxy = require('http-proxy');
-const veUtil = require('./veUtil');
 const config = require('./config');
 const log = require('./logger');
-
-const { match } = require("path-to-regexp")
+const { match } = require("path-to-regexp");
 
 log.init(config.logger);
 
 let socketConnected = false;
-let selectedChat = 0;
 let connection;
-let interactionId;
-const genesysResponses = require('./genesys');
 
 /**
  * MockProxy Class contains proxy servers, socket server and http server
  * genesys responses are redirected to http server by proxy servers
  * web socket server given by genesys mocked by local web socket server
  */
+
+ const header = {
+  'Access-Control-Allow-Origin': config.test_env.baseURL,
+  'Content-Type': 'application/json',
+  'access-control-allow-headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, DNT, User-Agent, Keep-Alive, Cache-Control, ININ-Client-Path',
+  'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, HEAD, OPTIONS, PATCH',
+  Allow: 'GET, PUT, POST, DELETE, HEAD, OPTIONS, PATCH',
+  'access-control-max-age': 2592000
+};
 class MockProxy {
 
   static  mockObjects = [];
-  /**
-   * set chat responses
-   * 0 for no interaction
-   * 1 for available interaction to setup pickup button
-   * @param {int} value select 0 for empty chat 1 for existed chat
-   */
-  setSelectedChat (value) {
-    selectedChat = value;
-  }
-
-  /**
-   * set interaction id to setup inbound call - pickup button in genesys
-   * @param {string} value visitor's interactionID
-   */
-  setInteractionId (value) {
-    interactionId = value;
-  }
 
   /**
    * set port number for ssl proxy server.
@@ -116,19 +103,21 @@ class MockProxy {
         reject(new Error(e));
       }
     });
-  };
+  }
+
+  
 
   /**
    * Add/replace mock resp.
    */
-  mockIt (rule, response) {
-    let index = -1;
-    if( (index = MockProxy.mockObjects.findIndex( function (element) {
-      return element.rule.path === rule.path;
-    })) !== -1) {
-      MockProxy.mockObjects[index] = {rule:rule, resp: response};
+  mockIt (rule, response, statusCode = 200, _header = header) {
+    const index = MockProxy.mockObjects.findIndex( function (element) {
+      return element.rule.path === rule.path && element.rule.method === rule.method;
+    });
+    if ((index !== -1)) {
+      MockProxy.mockObjects[index] = {rule:rule, resp: response, statusCode: statusCode, header: _header};
     } else {
-      MockProxy.mockObjects.push({rule:rule, resp: response});
+      MockProxy.mockObjects.push({rule:rule, resp: response, statusCode: statusCode, header: _header});
     }
     log.debug('Mocked:' + JSON.stringify(rule) + ' With response:' + JSON.stringify(response));
   }
@@ -139,7 +128,7 @@ class MockProxy {
    * @param {*} port this local mock server's port number
    * @returns promise
    */
-  startHttpServer (confObject, accessToken, port = 9001) {
+  startHttpServer (port = 9001) {
     return new Promise(function (resolve, reject) {
       try {
         const header = {
@@ -153,119 +142,20 @@ class MockProxy {
         http.createServer(function (req, res) {
           log.debug("REQUEST rcvd===> Method:" + req.method + " PATH:" + req.url);
 
-          const urlArray = req.url.split('/');
-          const path = urlArray[urlArray.length - 1];
-          const request = req;
           const mresp = MockProxy.mockObjects.find(function (element) {
             const rule = match(element.rule.path);
-            return rule(req.url) && rule.path === req.path;
+            return rule(req.url) && rule.path === req.path && element.rule.method === req.method;
           });
           if(mresp) {
-            log.debug("Got mock?" + JSON.stringify(mresp));
-            res.writeHead(200, header);
-            res.write(JSON.stringify(mresp.resp, true, 2));
-            res.end();
-          } else if (req.url.indexOf('oauth') !== -1) {
-            log.debug('Genesys Authorization');
-            res.writeHead(200, header);
-            res.writeHead(302, { location: config.test_env.baseURL + '/static/genesys.purecloud.html#access_token=' + accessToken + '&expires_in=86399&token_type=bearer' });
-            res.end();
-          } else if (req.method === 'PATCH' && path === 'PURECLOUD') {
-            log.debug('Genesys Users Presence');
-            res.writeHead(200, header);
-            res.write(JSON.stringify(genesysResponses.purecloud, true, 2));
-            res.end();
-          } else if (req.method === 'OPTIONS') {
-            log.debug('OPTIONS preflight of', req.url);
-            res.writeHead(200, header);
-            res.end();
-          } else if (req.method === 'GET' && path === 'me?expand=organization') {
-            log.debug('retrive organization');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            genesysResponses.userResponse.organization.id = confObject.organizationId;
-            res.write(JSON.stringify(genesysResponses.userResponse, true, 2));
-            res.end();
-          } else if (req.method === 'GET' && path === 'me?expand=conversationSummary') {
-            log.debug('retrive conversationSummary');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(genesysResponses.conversationSummary, true, 2));
-            res.end();
-          } else if (req.method === 'GET' && path === 'conversations') {
-            log.debug('retrive conversations');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(genesysResponses.conversations, true, 2));
-            res.end();
-          } else if (req.method === 'GET' && path === '1c1a063b-45bf-4719-9127-7bca923118c1') {
-            log.debug('retrive conversation ' + '1c1a063b-45bf-4719-9127-7bca923118c1');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(genesysResponses.conversationChat, true, 2));
-            res.end();
-          } else if (req.method === 'GET' && path === 'd36875ce-1bb6-4ad7-8ff9-5af8e727bd88') {
-            log.debug('retrive participants ' + 'd36875ce-1bb6-4ad7-8ff9-5af8e727bd88');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(genesysResponses.participants, true, 2));
-            res.end();
-          } else if (req.method === 'GET' && path === 'channels') {
-            log.debug('retrive channels');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            // res.write(JSON.stringify({ entities: [] }, true, 2));
-            res.write(JSON.stringify(genesysResponses.getChannels, true, 2));
-            res.end();
-          } else if (req.method === 'POST' && path === 'channels') {
-            log.debug('put channels');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            genesysResponses.channels.connectUri = `ws://localhost:${9898}/`;
-            res.write(JSON.stringify(genesysResponses.channels, true, 2));
-            res.end();
-          } else if (req.method === 'GET' && path === 'subscriptions') {
-            log.debug('retrive subscriptions');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(genesysResponses.subscriptions, true, 2));
-            res.end();
-            /*
-            connection.sendUTF(JSON.stringify(genesysResponses.wsMessages[0]));
-            connection.sendUTF(JSON.stringify(genesysResponses.wsMessages[1]));
-            connection.sendUTF(JSON.stringify(genesysResponses.wsMessages[2]));
-            */
-          } else if (req.method === 'PUT' && path === 'subscriptions') {
-            log.debug('put subscriptions');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(genesysResponses.subscriptions, true, 2));
-            res.end();
-          }
-          // different resposnses based on the case
-          else if (req.method === 'GET' && req.url.indexOf('api/v2/users/me?expand=chats') !== -1) {
-            log.debug('retrive chats');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(genesysResponses.chats[selectedChat], true, 2));
-            res.end();
-          } else if (req.method === 'GET' && path === 'chats') {
-            log.debug('retrive chats');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(genesysResponses.chats[selectedChat], true, 2));
-            res.end();
-          } else if (req.method === 'GET' && path === 'messages') {
-            log.debug('retrive messages');
-            res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: interactionId });
-            res.write(JSON.stringify(genesysResponses.messages, true, 2));
+            log.debug("Got mock?", JSON.stringify(mresp));
+            res.writeHead(mresp.statusCode, mresp.header);
+            if (mresp.resp) {
+              res.write(JSON.stringify(mresp.resp, true, 2));
+            }
             res.end();
           } else {
-            log.warn('NON MOCKED Method' + req.method + req.url);
+            log.warn('NON MOCKED Method', req.method, req.url);
             res.writeHead(200, header);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end();
           }
         }).listen(port);
