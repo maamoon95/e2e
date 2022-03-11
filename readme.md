@@ -28,7 +28,7 @@ npm run dev-test
 Tests are run using configuration specified in config.js based on NODE_ENV.
 
 ```bash
-NODE_ENV=environment npm run test     
+NODE_ENV=test npm run test     
 ```
 
 **environment** can be one of:
@@ -36,6 +36,43 @@ NODE_ENV=environment npm run test
  - test - will run against localhost:9000 (to be used in travis runs)
  - staging - will run against staging.leadsecure.com
 
+
+## Mocking Responses
+To be able to mock responses you first need to setup your hosts file. Redirect desired mock dns to localhost.
+
+You can find a working example in:
+```bash
+tests/StandaloneMockProxy.js
+```
+It can be used to debug.
+### Tutorial
+```bash
+/*** require helper ***/
+const MockProxy = require('./lib/mockProxy');
+/*** create a new proxy instance ***/
+const mockProxy = new MockProxy();
+
+/*** start servers with port number or use their default port ***/
+// start 80 port proxy server, default 9001
+mockProxy.startHttpProxyServer(PROXY_SERVER_PORT);
+// start 443 port proxy server, default 9001
+mockProxy.startSSlProxyServer(PROXY_SERVER_PORT);
+// start https server for mock responses, default 9001
+mockProxy.startHttpServer(PROXY_SERVER_PORT);
+// start socket server for mock socket connection, default 9898
+mockProxy.startSocketServer(SOCKET_SERVER_PORT);
+
+/*** mock request ***/
+// to mock a request, put path, method and response objecy
+mockProxy.mockIt({ path: '/info', method: 'POST' }, responseObject);
+
+// note: dont forget to use "\\" (double reverse slash) before "?" (question mark)
+mockProxy.mockIt({ path: '/info\\?companyParam=videoengager', method: 'GET' }, responseObject);
+
+/*** mock advanced request ***/
+// you can mock with custom status number and header
+mockProxy.mockIt({ path: '/oauth/authorize', method: 'GET' }, responseObject, 302, headerObject);
+```
 ## About The Tests
 VideoEngager e2e tests core tests are consist of 10 different scenarios
 
