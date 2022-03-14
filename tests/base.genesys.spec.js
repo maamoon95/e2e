@@ -133,7 +133,7 @@ describe('genesys page tests in iframe mode', function () {
     await visitor.remoteVideoStarted();
   });
 
-  xit('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
+  it('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
     // set mockProxy server to response like there are an active interaction
     // replace chat mock with non-empty resp.
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });

@@ -16,7 +16,7 @@ const environments = {
     baseURL: 'https://dev.videoengager.com',
     organizationId: '327d10eb-0826-42cd-89b1-353ec67d33f8',
     deploymentId: 'c2eaaa5c-d755-4e51-9136-b5ee86b92af3',
-    clientId: '5f321e68-94d3-4bae-9c2d-2e372cd99363',
+    clientId: 'SOME_ID',
     tennantId: 'test_tenant',
     environment: 'https://api.mypurecloud.com.au',
     queue: 'video',
@@ -37,7 +37,7 @@ const environments = {
     baseURL: 'http://localhost:9000',
     organizationId: '327d10eb-0826-42cd-89b1-353ec67d33f8',
     deploymentId: 'c2eaaa5c-d755-4e51-9136-b5ee86b92af3',
-    clientId: '5f321e68-94d3-4bae-9c2d-2e372cd99363', //b104c6b3-d72a-402b-a22d-bb67bf989525
+    clientId: 'SOME_ID',
     tennantId: 'test_tenant',
     environment: 'https://api.mypurecloud.com.au',
     queue: 'video',
@@ -58,7 +58,7 @@ const environments = {
     baseURL: 'https://staging.leadsecure.com',
     organizationId: 'f6668859-042a-4b04-b998-3e3261fb3dd4',
     deploymentId: '1b4b1124-b51c-4c38-899f-3a90066c76cf',
-    clientId: 'a7bdc6f8-c1fa-4662-b032-1da094e424ea',
+    clientId: 'SOME_ID',
     tennantId: 'IF9UduUVaQ3ldy8N',
     environment: 'https://api.mypurecloud.de',
     queue: 'Support',
@@ -79,10 +79,11 @@ const environments = {
     baseURL: 'https://videome.leadsecure.com',
     organizationId: '42ef203c-4d40-44e5-8a6e-d978b52f678c',
     deploymentId: '973f8326-c601-40c6-82ce-b87e6dafef1c',
+    clientId: 'SOME_ID',
     tennantId: 'zwqqsB7k16V0YBpW',
     environment: 'https://api.mypurecloud.com',
     queue: 'TestQueue',
-    logLevel: 'trace'
+    logLevel: 'warn'
   }
 };
 const env = process.env.NODE_ENV || 'test';
