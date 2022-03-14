@@ -166,6 +166,14 @@ const veUtils = {
       });
   },
   /**
+   * update brokerage profile with given object. it only updates given parameters
+   * @param {Object} profile brokerage profile to update
+   * @returns promise
+   */
+  setBrokerageProfile: function (profile) {
+    return dbAPI.updateBrokerageProfile(this.token, profile);
+  },
+  /**
    * call to set precall
    * @param {boolean} enable enable or disable precall by flag
    * @returns promise

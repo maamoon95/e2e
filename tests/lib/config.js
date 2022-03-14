@@ -16,7 +16,7 @@ const environments = {
     baseURL: 'https://dev.videoengager.com',
     organizationId: '327d10eb-0826-42cd-89b1-353ec67d33f8',
     deploymentId: 'c2eaaa5c-d755-4e51-9136-b5ee86b92af3',
-    clientId: 'b104c6b3-d72a-402b-a22d-bb67bf989525',
+    clientId: '5f321e68-94d3-4bae-9c2d-2e372cd99363',
     tennantId: 'test_tenant',
     environment: 'https://api.mypurecloud.com.au',
     queue: 'video',
