@@ -144,7 +144,7 @@ class MockProxy {
 
           const mresp = MockProxy.mockObjects.find(function (element) {
             const rule = match(element.rule.path);
-            return rule(req.url) && rule.path === req.path && element.rule.method === req.method;
+            return rule(req.url) && element.rule.method === req.method;
           });
           if(mresp) {
             log.debug("Got mock?", JSON.stringify(mresp));
