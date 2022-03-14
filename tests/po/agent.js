@@ -73,11 +73,11 @@ class Agent extends Page  {
    * @param {string} pin same visitor and agent pin code
    * @returns {string} agent url with configurations in url paramters
    */
-  async createAgentUrlWithJS (confObject, sessionId, mode = 'inbound', conferenceId, pin) {
+  async createAgentUrlWithJS (token, confObject, sessionId, mode = 'inbound', conferenceId, pin) {
     const params = {
       params: veUtil.strToBase64('{"locale":"en_US"}'),
       interaction: 1,
-      token: this.api.token,
+      token: token,
       sk: true,
       isPopup: false
     };
@@ -98,92 +98,5 @@ class Agent extends Page  {
     log.debug('using config object:' + JSON.stringify(confObject));
     return confObject.baseURL + '/static/agent.popup.cloud.html';
   }
-
-  /**
-   * generate shorturl for visitor and add it to db
-   * @param {string} string VISITOR_SESSION_ID
-   * @param {string} string CONFERENCE_ID
-   * @param {string} string PIN
-   * @returns {string} visitor short url
-   */
-  async createVisitorShortUrl (confObject, VISITOR_SESSION_ID, CONFERENCE_ID, PIN) {
-    const code = veUtil.makeid(6);
-    await this.api.addShorUrl(confObject, VISITOR_SESSION_ID, CONFERENCE_ID, PIN, code);
-    return confObject.baseURL + '/ve/' + code;
-  }
-
-  /**
-   * generate authorizatin token to be able to make api calls
-   */
-  async authenticate(confObject){
-    return await this.api.authenticate(confObject);
-  }
-
-  /**
-   * return authorization token
-   */
-  get token (){
-    return this.api.token;
-  }
-
-  /**
-   * api calls for authorized agent
-   */
-  api = {
-    authenticate: async function (confObject) {
-      this.token = await dbAPI.impersonate(confObject);
-      this.confObject = confObject;
-    },
-    /**
-     * @returns current agent's settings
-     */
-    getBrokerage: function () {
-      return dbAPI.getBrokerage(this.token)
-        .then(function (result) {
-          return result.data;
-        });
-    },
-    /**
-     * call to set precall
-     * @param {boolean} enable enable or disable precall by flag
-     * @returns promise
-     */
-    setPrecall: function (enable) {
-      return dbAPI.updateBrokerageProfile(this.token, { branding: { visitorShowPrecall: enable } });
-    },
-    /**
-     * call to set safety (anti harassment)
-     * @param {boolean} enable enable or disable functionality
-     * @param {boolean} disableRemoteCamera start with disabled remote camera
-     * @returns promise
-     */
-    setSafety: function (enable, disableRemoteCamera) {
-      return dbAPI.updateBrokerageProfile(this.token, { safety: { enable: enable, disableRemoteCamera: disableRemoteCamera } });
-    },
-    /**
-     * 
-     * @param {boolean} blur enable or disable blur func
-     * @returns promise
-     */
-    setBlur: function (blur) {
-      return dbAPI.updateBrokerageProfile(this.token, { branding: { buttons: { 'wd-v-blur': blur } } });
-    },
-    /**
-     * add generated visitor shorturl binded to full url to db
-     * @param {Object} confObject our environment configuration file
-     * @param {string} transferId visitor session id
-     * @param {string} conferenceId agent and visitor shared conferance id for 3 way call
-     * @param {string} pin agent and visitor shared pin code
-     * @param {string} code shorturl code
-     * @returns promise
-     */
-    addShorUrl: async function (confObject, transferId, conferenceId, pin, code) {
-      const encodedClientInfo = veUtil.jsonToBase64(veUtil.generateClientInfo(transferId));
-      const postData = veUtil.generateShortUrlPostData(confObject, conferenceId, encodedClientInfo, code, transferId, pin);
-      log.debug('postData:', JSON.stringify(postData));
-      const url = confObject.baseURL + '/api/shorturls';
-      return dbAPI.addShortUrl(this.token, url, postData);
-    }
-  };
 }
 module.exports = Agent;

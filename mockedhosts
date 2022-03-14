@@ -1,0 +1,9 @@
+127.0.0.1 login.mypurecloud.com.au
+127.0.0.1 api.mypurecloud.com.au
+127.0.0.1 login.mypurecloud.de
+127.0.0.1 api.mypurecloud.de
+127.0.0.1 login.mypurecloud.com
+127.0.0.1 api.mypurecloud.com
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
