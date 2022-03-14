@@ -41,8 +41,8 @@ class MockProxy {
         const sslProxy = httpProxy.createProxyServer({
           target: 'http://localhost:' + port,
           ssl: {
-            key: fs.readFileSync('./tests/lib/cert/mypurecloud.com.au.key', 'utf8'),
-            cert: fs.readFileSync('./tests/lib/cert/mypurecloud.com.au.crt', 'utf8')
+            key: fs.readFileSync('./tests/lib/cert/fakeCertificate.key', 'utf8'),
+            cert: fs.readFileSync('./tests/lib/cert/fakeCertificate.crt', 'utf8')
           }
         }).listen(443);
         resolve({ status: 'ok', message: 'ssl proxy server started' });
