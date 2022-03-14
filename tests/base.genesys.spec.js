@@ -75,11 +75,16 @@ describe('genesys page tests in iframe mode', function () {
     await mockProxy.startSocketServer(SOCKET_SERVER_PORT);
     // authenticate and set to default db
     await veUtil.authenticate();
-    await veUtil.setPrecall(false);
-    await veUtil.setPrecallWorkflow(false);
-    await veUtil.setNewTheme(false);
-    await veUtil.setPopup(false);
-    await veUtil.setInviteUrl(config.test_env.baseURL);
+    await veUtil.setBrokerageProfile({
+      branding:
+        {
+          visitorShowPrecall: false,
+          enablePrecallWorkflow: false,
+          inviteUrl: config.test_env.baseURL
+        },
+      newTheme: false,
+      isPopup: false
+    });
   });
 
   beforeEach(async function () {
