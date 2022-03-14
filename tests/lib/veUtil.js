@@ -1,7 +1,7 @@
 const uuid = require('uuid');
 const dbAPI = require('./dbAPI');
 const log = require('./logger');
-const config = require('./lib/config');
+const config = require('./config');
 log.init(config.logger);
 
 const veUtils = {

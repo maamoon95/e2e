@@ -2,8 +2,8 @@ const { browser, element, by } = require('protractor');
 const veUtil = require('../lib/veUtil');
 const Agent = require('./agent');
 const until = browser.ExpectedConditions;
-const config = require('./config');
-const log = require('./logger');
+const config = require('../lib/config');
+const log = require('../lib/logger');
 log.init(config.logger);
 class Genesys extends Agent {
   constructor () {
