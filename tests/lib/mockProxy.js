@@ -4,20 +4,20 @@ const http = require('http');
 const httpProxy = require('http-proxy');
 const config = require('./config');
 const log = require('./logger');
-const { match } = require("path-to-regexp");
+const { match } = require('path-to-regexp');
 
 log.init(config.logger);
 
 let socketConnected = false;
 let connection;
+let sslProxy;
+let httpsProxy;
+let httpServer;
+let socketServer;
+let wsServer;
+const mockObjects = [];
 
-/**
- * MockProxy Class contains proxy servers, socket server and http server
- * genesys responses are redirected to http server by proxy servers
- * web socket server given by genesys mocked by local web socket server
- */
-
- const header = {
+const header = {
   'Access-Control-Allow-Origin': config.test_env.baseURL,
   'Content-Type': 'application/json',
   'access-control-allow-headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, DNT, User-Agent, Keep-Alive, Cache-Control, ININ-Client-Path',
@@ -25,10 +25,13 @@ let connection;
   Allow: 'GET, PUT, POST, DELETE, HEAD, OPTIONS, PATCH',
   'access-control-max-age': 2592000
 };
+
+/**
+ * MockProxy Class contains proxy servers, socket server and http server
+ * genesys responses are redirected to http server by proxy servers
+ * web socket server given by genesys mocked by local web socket server
+ */
 class MockProxy {
-
-  static  mockObjects = [];
-
   /**
    * set port number for ssl proxy server.
    * it will listen 443 and will redirect messages to given port number in local host
@@ -38,19 +41,36 @@ class MockProxy {
   startSSlProxyServer (port = 9001) {
     return new Promise(function (resolve, reject) {
       try {
-        const sslProxy = httpProxy.createProxyServer({
+        sslProxy = httpProxy.createProxyServer({
           target: 'http://localhost:' + port,
           ssl: {
             key: fs.readFileSync('./tests/lib/cert/fakeCertificate.key', 'utf8'),
             cert: fs.readFileSync('./tests/lib/cert/fakeCertificate.crt', 'utf8')
           }
-        }).listen(443);
+        });
+
+        sslProxy.on('error', function (err, req, res) {
+          log.error('ssl proxy server error', req.method, req.url, err);
+          res.writeHead(200, header);
+          res.end();
+        });
+
+        sslProxy.listen(443);
         resolve({ status: 'ok', message: 'ssl proxy server started' });
       } catch (e) {
         log.error(e);
         reject(new Error({ status: 'fail', message: 'ssl proxy failed', error: e }));
       }
     });
+  }
+
+  /**
+   * close ssl proxy server
+   */
+  closeSSlProxyServer () {
+    if (sslProxy) {
+      sslProxy.close();
+    }
   }
 
   /**
@@ -61,13 +81,30 @@ class MockProxy {
   startHttpProxyServer (port = 9001) {
     return new Promise(function (resolve, reject) {
       try {
-        const httpsProxy = httpProxy.createProxyServer({ target: 'http://localhost:' + port }).listen(80);
+        httpsProxy = httpProxy.createProxyServer({ target: 'http://localhost:' + port });
+
+        httpsProxy.on('error', function (err, req, res) {
+          log.error('http proxy server error', req.method, req.url, err);
+          res.writeHead(200, header);
+          res.end();
+        });
+
+        httpsProxy.listen(80);
         resolve({ status: 'ok', message: 'http server started' });
       } catch (e) {
         log.error(e);
         reject(new Error({ status: 'fail', message: 'http proxy failed', error: e }));
       }
     });
+  }
+
+  /**
+   * close http proxy server
+   */
+  closeHttpProxyServer () {
+    if (httpsProxy) {
+      httpsProxy.close();
+    }
   }
 
   /**
@@ -78,9 +115,16 @@ class MockProxy {
   startSocketServer (port = 9898) {
     return new Promise(function (resolve, reject) {
       try {
-        const socketServer = http.createServer();
+        socketServer = http.createServer();
+
+        socketServer.on('error', function (err, req, res) {
+          log.error('http socket server error', req.method, req.url, err);
+          res.writeHead(200, header);
+          res.end();
+        });
+
         socketServer.listen(port);
-        const wsServer = new WebSocketServer({
+        wsServer = new WebSocketServer({
           httpServer: socketServer
         });
 
@@ -97,6 +141,10 @@ class MockProxy {
           });
         });
 
+        wsServer.on('error', function (err) {
+          log.error('wsServer error', err);
+        });
+
         resolve({ status: 'ok', message: 'socket server started' });
       } catch (e) {
         log.error(e.message);
@@ -105,19 +153,29 @@ class MockProxy {
     });
   }
 
-  
+  /**
+   * close websocket server
+   */
+  async closeSocketServer () {
+    if (wsServer) {
+      await wsServer.close();
+    }
+    if (socketServer) {
+      socketServer.close();
+    }
+  }
 
   /**
    * Add/replace mock resp.
    */
   mockIt (rule, response, statusCode = 200, _header = header) {
-    const index = MockProxy.mockObjects.findIndex( function (element) {
+    const index = mockObjects.findIndex(function (element) {
       return element.rule.path === rule.path && element.rule.method === rule.method;
     });
     if ((index !== -1)) {
-      MockProxy.mockObjects[index] = {rule:rule, resp: response, statusCode: statusCode, header: _header};
+      mockObjects[index] = { rule: rule, resp: response, statusCode: statusCode, header: _header };
     } else {
-      MockProxy.mockObjects.push({rule:rule, resp: response, statusCode: statusCode, header: _header});
+      mockObjects.push({ rule: rule, resp: response, statusCode: statusCode, header: _header });
     }
     log.debug('Mocked:' + JSON.stringify(rule) + ' With response:' + JSON.stringify(response));
   }
@@ -131,40 +189,46 @@ class MockProxy {
   startHttpServer (port = 9001) {
     return new Promise(function (resolve, reject) {
       try {
-        const header = {
-          'Access-Control-Allow-Origin': config.test_env.baseURL,
-          'Content-Type': 'application/json',
-          'access-control-allow-headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, DNT, User-Agent, Keep-Alive, Cache-Control, ININ-Client-Path',
-          'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, HEAD, OPTIONS, PATCH',
-          Allow: 'GET, PUT, POST, DELETE, HEAD, OPTIONS, PATCH',
-          'access-control-max-age': 2592000
-        };
-        http.createServer(function (req, res) {
-          log.debug("REQUEST rcvd===> Method:" + req.method + " PATH:" + req.url);
+        httpServer = http.createServer(function (req, res) {
+          log.debug('REQUEST rcvd===> Method:' + req.method + ' PATH:' + req.url);
 
-          const mresp = MockProxy.mockObjects.find(function (element) {
+          const mresp = mockObjects.find(function (element) {
             const rule = match(element.rule.path);
             return rule(req.url) && element.rule.method === req.method;
           });
-          if(mresp) {
-            log.debug("Got mock?", JSON.stringify(mresp));
+          if (mresp) {
+            log.debug('Got mock?', JSON.stringify(mresp));
             res.writeHead(mresp.statusCode, mresp.header);
             if (mresp.resp) {
               res.write(JSON.stringify(mresp.resp, true, 2));
             }
-            res.end();
-          } else {
-            log.warn('NON MOCKED Method', req.method, req.url);
-            res.writeHead(200, header);
-            res.end();
+            return res.end();
           }
-        }).listen(port);
+          log.warn('NON MOCKED Method', req.method, req.url);
+          res.writeHead(200, header);
+          return res.end();
+        });
+        httpServer.on('error', function (err, req, res) {
+          log.error('http server error', req.method, req.url, err);
+          res.writeHead(200, header);
+          res.end();
+        });
+        httpServer.listen(port);
         resolve({ status: 'ok', message: 'socket server started' });
       } catch (e) {
         log.error(e);
         reject(new Error({ status: 'fail', message: 'socket server failed', error: e }));
       }
     });
+  }
+
+  /**
+   * close http server which responses proxied requests
+   */
+  closeHttpServer () {
+    if (httpServer) {
+      httpServer.close();
+    }
   }
 
   /**

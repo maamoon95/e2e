@@ -1,4 +1,4 @@
-/* global describe beforeAll beforeEach afterEach expect it xit */
+/* global describe beforeAll beforeEach afterEach expect it xit afterAll */
 const { browser } = require('protractor');
 const config = require('./lib/config');
 const log = require('./lib/logger');
@@ -101,6 +101,14 @@ describe('genesys page tests in iframe mode', function () {
     await visitor.close();
   });
 
+  afterAll(async function () {
+    // close all proxy servers
+    mockProxy.closeHttpProxyServer();
+    mockProxy.closeHttpServer();
+    mockProxy.closeSSlProxyServer();
+    mockProxy.closeSocketServer();
+  });
+
   it('outbound call: invite visitor, agent is in iframe', async function () {
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
@@ -133,7 +141,7 @@ describe('genesys page tests in iframe mode', function () {
     await visitor.remoteVideoStarted();
   });
 
-  it('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
+  it('inbound call: create mocked invitation, use pickup button, agent is in iframe', async function () {
     // set mockProxy server to response like there are an active interaction
     // replace chat mock with non-empty resp.
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
