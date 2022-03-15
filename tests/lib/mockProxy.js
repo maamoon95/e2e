@@ -157,9 +157,6 @@ class MockProxy {
    * close websocket server
    */
   async closeSocketServer () {
-    if (wsServer) {
-      await wsServer.close();
-    }
     if (socketServer) {
       socketServer.close();
     }
