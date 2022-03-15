@@ -42,7 +42,7 @@ describe('genesys page tests in iframe mode', function () {
     };
 
     // mandatory
-    mockProxy.mockIt({ path: '/oauth/authorize\\?' + authURLParams, method: 'GET' }, null, 302, authHeader);
+    mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authHeader);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
     mockProxy.mockIt({ path: '/api/v2/users/:userId/presences/PURECLOUD', method: 'PATCH' }, genesysResponses.purecloud);
@@ -97,7 +97,7 @@ describe('genesys page tests in iframe mode', function () {
     await genesys.switchToIframe();
     await genesys.hangup.click();
     await genesys.confirm.click();
-    await genesys.close();
+    // await genesys.close();
     await visitor.close();
   });
 
