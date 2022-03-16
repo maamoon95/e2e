@@ -27,10 +27,13 @@ class Agent extends Page  {
     return browser.wait(until.visibilityOf(element(by.id('remoteVideo'))), 5000, 'Remote Video not available in 5s');
   };
   previewVideoStarted = async function () {
-    return browser.wait(until.visibilityOf(element(by.id('videoPreview'))), 15000, 'Preview video not available in 5s');
+    return browser.wait(until.visibilityOf(element(by.id('videoPreview'))), 5000, 'Preview video not available in 5s');
   };
   hasSrcObject = function() {
     return element(by.id('localVideo')).getAttribute('srcObject');
+  };
+  startVideoClickable = async function () {
+    return browser.wait(until.elementToBeClickable(element(by.id('startVideoButton'))), 5000, 'startVideoButton not available in 5s');
   };
   getCloudUrl = function () {
     return browser.driver.wait(function () {

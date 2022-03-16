@@ -89,8 +89,8 @@ describe('Basic video call tests', function () {
       await agent.openAsNew(agentUrl);
       // config agent without sessionID
       await agent.configureAgentWithJS(config.test_env);
-      // click blue button in agent
-      await agent.previewVideoStarted();
+      // check if startVideo clickable
+      await agent.startVideoClickable();
       // get visitor short url
       await agent.startVideo.click();
       // get visitor short url
