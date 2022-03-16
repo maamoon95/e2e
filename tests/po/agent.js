@@ -4,6 +4,7 @@ const log = require('../lib/logger');
 const until = browser.ExpectedConditions;
 const dbAPI = require('../lib/dbAPI');
 const veUtil = require('../lib/veUtil');
+const TIMEOUT = 30000; // 30 sec
 class Agent extends Page  {
   constructor() {
     super();
@@ -21,24 +22,24 @@ class Agent extends Page  {
     await browser.executeScript('window.jsVeInitClb = function () {_videoengager.startVideoVisitor("' + visitorId + '");} ');
   };
   localVideoStarted = async function () {
-    return browser.wait(until.visibilityOf(element(by.id('localVideo'))), 30000, 'Agent localvideo not available in 30s');
+    return browser.wait(until.visibilityOf(element(by.id('localVideo'))), TIMEOUT, 'Agent localvideo not available in 30s');
   };
   remoteVideoStarted = async function () {
-    return browser.wait(until.visibilityOf(element(by.id('remoteVideo'))), 5000, 'Remote Video not available in 5s');
+    return browser.wait(until.visibilityOf(element(by.id('remoteVideo'))), TIMEOUT, 'Remote Video not available in 30s');
   };
   previewVideoStarted = async function () {
-    return browser.wait(until.visibilityOf(element(by.id('videoPreview'))), 5000, 'Preview video not available in 5s');
+    return browser.wait(until.visibilityOf(element(by.id('videoPreview'))), TIMEOUT, 'Preview video not available in 30s');
   };
   hasSrcObject = function() {
     return element(by.id('localVideo')).getAttribute('srcObject');
   };
   startVideoClickable = async function () {
-    return browser.wait(until.elementToBeClickable(element(by.id('startVideoButton'))), 5000, 'startVideoButton not available in 5s');
+    return browser.wait(until.elementToBeClickable(element(by.id('startVideoButton'))), TIMEOUT, 'startVideoButton not available in 30s');
   };
   getCloudUrl = function () {
     return browser.driver.wait(function () {
       return browser.driver.executeScript('return (window.getVeContext().cloudUrl)');
-    }, 5000, 'get shorturl within 5 seconds');
+    }, TIMEOUT, 'get shorturl within 30 seconds');
   };
   configureAgentWithJS = async function (confObject, sessionId) {
     // {\'pak\':"' + config.test_env.pak + '", \'externalId\':"' + config.test_env.externalId + '"}
