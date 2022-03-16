@@ -7,6 +7,8 @@ const veUtil = require('./veUtil');
 const assert = require('assert');
 log.init(config.logger);
 
+const TIMEOUT = 30000; // 30 sec
+
 let sessionId;
 let iframeElement;
 let firstWindow;
@@ -185,7 +187,7 @@ const clickWhenExist = function (selector) {
       .then(function (res) {
         return res;
       });
-  }, 5000, 'button is not available within 5 seconds')
+  }, TIMEOUT, 'button is not available within 30 seconds')
     .then(function () {
       return browser.driver.sleep(500);
     })
@@ -194,9 +196,6 @@ const clickWhenExist = function (selector) {
     })
     .catch(errorHandler);
 };
-
-// 5 sec
-const TIMEOUT = 5000;
 
 const common = {
   restartBrowser: async function () {
@@ -220,7 +219,7 @@ const common = {
         .then(function (res) {
           return res;
         });
-    }, 5000, 'get shorturl within 5 seconds');
+    }, TIMEOUT, 'get shorturl within 5 seconds');
   },
 
   clickAgentVideoChat: function () {
@@ -229,7 +228,7 @@ const common = {
         .then(function (res) {
           return res;
         });
-    }, 5000, 'load agent precall btn within 5 seconds')
+    }, TIMEOUT, 'load agent precall btn within 5 seconds')
       .then(function () {
         return browser.driver.sleep(500);
       })
