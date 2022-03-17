@@ -49,5 +49,15 @@ class Visitor extends Page {
     const constructedUrl = popUpUrl + '?tennantId=' + encodedTenant + '&params=' + encodedParam;
     return constructedUrl;
   }
+
+  async verifyRedirect (redirectUrl) {
+    return browser.wait(async function () {
+      const currentUrl = await browser.getCurrentUrl();
+      if (currentUrl === redirectUrl) {
+        return true;
+      }
+      return false;
+    }, 30000, 'cannot validate redirect url in 5 sec');
+  }
 }
 module.exports = Visitor;

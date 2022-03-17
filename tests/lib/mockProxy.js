@@ -177,6 +177,10 @@ class MockProxy {
     log.debug('Mocked:' + JSON.stringify(rule) + ' With response:' + JSON.stringify(response));
   }
 
+  cleanMocks () {
+    mockObjects.splice(0, mockObjects.length);
+  }
+
   /**
    * local mock http server
    * @param {*} accessToken genesys mock auth token. it is given as auth token by genesys
@@ -191,7 +195,7 @@ class MockProxy {
 
           const mresp = mockObjects.find(function (element) {
             const rule = match(element.rule.path);
-//            log.debug("URL PATH:" + req.url + "RULE:" + element.rule.path);
+            //            log.debug("URL PATH:" + req.url + "RULE:" + element.rule.path);
             return rule(req.url) && element.rule.method === req.method;
           });
           if (mresp) {
@@ -250,6 +254,14 @@ class MockProxy {
         count -= 1;
       }, 500);
     });
+  }
+
+  stopAndClean () {
+    this.closeHttpProxyServer();
+    this.closeHttpServer();
+    this.closeSSlProxyServer();
+    this.closeSocketServer();
+    this.cleanMocks();
   }
 }
 
