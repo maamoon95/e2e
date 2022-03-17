@@ -9,20 +9,10 @@ const genesysResponses = require('./lib/genesys');
 
 const PROXY_SERVER_PORT = 9001;
 const SOCKET_SERVER_PORT = 9898;
+const genesysPageLocation = config.test_env.baseURL + '/static/genesys.purecloud.html';
 const accessToken = veUtil.getUUID();
 const channelId = veUtil.getUUID();
-const genesysPageLocation = config.test_env.baseURL + '/static/genesys.purecloud.html';
 
-// start 80 port proxy server
-mockProxy.startHttpProxyServer(PROXY_SERVER_PORT);
-// start 443 port proxy server
-mockProxy.startSSlProxyServer(PROXY_SERVER_PORT);
-// start https server for mock responses
-mockProxy.startHttpServer(PROXY_SERVER_PORT);
-// start socket server for mock socket connection
-mockProxy.startSocketServer(SOCKET_SERVER_PORT);
-
-// prepare mocks
 genesysResponses.userResponse.organization.id = config.test_env.organizationId;
 genesysResponses.channels.connectUri = `ws://localhost:${SOCKET_SERVER_PORT}/`;
 genesysResponses.channels.id = channelId;
@@ -38,19 +28,37 @@ const authURLParams = veUtil.generateUrlParamters({
 const authHeader = {
   location: genesysPageLocation + '#access_token=' + accessToken + '&expires_in=86399&token_type=bearer'
 };
+
+// mandatory
+mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authHeader);
 mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
-mockProxy.mockIt({ path: '/oauth/authorize\\?' + authURLParams, method: 'GET' }, null, 302, authHeader);
 mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
-mockProxy.mockIt({ path: '/api/v2/conversations/chats', method: 'GET' }, genesysResponses.chats[0]);
-mockProxy.mockIt({ path: '/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
 mockProxy.mockIt({ path: '/api/v2/users/:userId/presences/PURECLOUD', method: 'PATCH' }, genesysResponses.purecloud);
-mockProxy.mockIt({ path: '/api/v2/conversations', method: 'GET' }, genesysResponses.conversations);
-mockProxy.mockIt({ path: '/CONVERSATION_ID', method: 'GET' }, genesysResponses.conversationChat);
-mockProxy.mockIt({ path: '/AGENT_PARTICIPANT_ID', method: 'GET' }, genesysResponses.participants);
 mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'POST' }, genesysResponses.channels);
 mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'GET' }, genesysResponses.getChannels);
+mockProxy.mockIt({ path: '/api/v2/conversations/chats', method: 'GET' }, genesysResponses.chats[0]);
+
+// not mandaroty
+/*
+mockProxy.mockIt({ path: '/api/v2/conversations', method: 'GET' }, genesysResponses.conversations);
+mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=chats', method: 'GET' }, genesysResponses.chats[0]);
+*/
+// not used in this tests
+/*
+mockProxy.mockIt({ path: '/AGENT_PARTICIPANT_ID', method: 'GET' }, genesysResponses.participants);
+mockProxy.mockIt({ path: '/CONVERSATION_ID', method: 'GET' }, genesysResponses.conversationChat);
+*/
+// need for inbound call
+/*
 mockProxy.mockIt({ path: '/api/v2/notifications/channels/' + channelId + '/subscriptions', method: 'GET' }, genesysResponses.subscriptions);
 mockProxy.mockIt({ path: '/api/v2/notifications/channels/' + channelId + '/subscriptions', method: 'PUT' }, genesysResponses.subscriptions);
-mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=chats', method: 'GET' }, genesysResponses.chats[0]);
-mockProxy.mockIt({ path: '/chats', method: 'GET' }, genesysResponses.chats[0]);
-mockProxy.mockIt({ path: '/messages', method: 'GET' }, genesysResponses.messages);
+*/
+
+// start 80 port proxy server
+mockProxy.startHttpProxyServer(PROXY_SERVER_PORT);
+// start 443 port proxy server
+mockProxy.startSSlProxyServer(PROXY_SERVER_PORT);
+// start https server for mock responses
+mockProxy.startHttpServer(PROXY_SERVER_PORT);
+// start socket server for mock socket connection
+mockProxy.startSocketServer(SOCKET_SERVER_PORT);
