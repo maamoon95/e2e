@@ -91,6 +91,8 @@ describe('Basic video call tests', function () {
       await agent.configureAgentWithJS(config.test_env);
       // check if startVideo clickable
       await agent.startVideoClickable();
+      // wait for listeners set
+      await browser.sleep(1000);
       // get visitor short url
       await agent.startVideo.click();
       // get visitor short url
