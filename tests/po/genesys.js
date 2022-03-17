@@ -19,6 +19,13 @@ class Genesys extends Agent {
   }
 
   /**
+   * return "Start Video Session" html button element as selemium object
+   */
+  get acceptIncomingCallButton () {
+    return element(by.id('acceptIncomingCallButton'));
+  }
+
+  /**
    * return "Pickup Video Chat" html button element as selemium object
    */
   get acceptClickToVideoButton () {
@@ -30,6 +37,14 @@ class Genesys extends Agent {
    */
   get inviteUrl () {
     return element(by.className('invite_url'));
+  }
+
+  /**
+   * check if "Start Video Session" button is available which starts popup window
+   * @returns promise
+   */
+  async StartVideoSessionAvailable () {
+    return browser.wait(until.visibilityOf(element(by.id('acceptIncomingCallButton'))), 20000, 'acceptIncomingCallButton does not became available in 20s');
   }
 
   /**
@@ -54,6 +69,24 @@ class Genesys extends Agent {
    */
   async iframeCreated () {
     return browser.wait(until.visibilityOf(element(by.id('genesysIframe'))), 20000, 'genesysIframe does not became available in 20s');
+  }
+
+  /**
+   * check if agent popup is created
+   * @returns promise
+   */
+  async popupCreated (windowsBeforePopup) {
+    const windowsAfterPopup = await browser.getAllWindowHandles();
+    const popupWindow = windowsAfterPopup.filter(function (window) {
+      return windowsBeforePopup.indexOf(window) < 0;
+    });
+    if (popupWindow.length === 1) {
+      const genesysPopup = popupWindow[0];
+      const agent = new Agent();
+      agent.myHandle = genesysPopup;
+      return agent;
+    }
+    throw new Error('no new popup window');
   }
 
   /**
