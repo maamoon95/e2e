@@ -44,7 +44,7 @@ class Genesys extends Agent {
    * @returns promise
    */
   async StartVideoSessionAvailable () {
-    return browser.wait(until.visibilityOf(element(by.id('acceptIncomingCallButton'))), 20000, 'acceptIncomingCallButton does not became available in 20s');
+    return browser.wait(until.elementToBeClickable(element(by.id('acceptIncomingCallButton'))), 20000, 'acceptIncomingCallButton does not became available in 20s');
   }
 
   /**
@@ -52,7 +52,7 @@ class Genesys extends Agent {
    * @returns promise
    */
   async c2vAvailable () {
-    return browser.wait(until.visibilityOf(element(by.id('startVideoButton'))), 20000, 'startVideoButton does not became available in 20s');
+    return browser.wait(until.elementToBeClickable(element(by.id('startVideoButton'))), 20000, 'startVideoButton does not became available in 20s');
   }
 
   /**
@@ -60,7 +60,7 @@ class Genesys extends Agent {
    * @returns promise
    */
   async pickupAvailable () {
-    return browser.wait(until.visibilityOf(element(by.id('acceptClickToVideoButton'))), 20000, 'acceptClickToVideoButton does not became available in 20s');
+    return browser.wait(until.elementToBeClickable(element(by.id('acceptClickToVideoButton'))), 20000, 'acceptClickToVideoButton does not became available in 20s');
   }
 
   /**

@@ -21,7 +21,7 @@ class Visitor extends Page {
   }
 
   async precallStarted () {
-    return browser.wait(until.visibilityOf(element(by.id('joinConferenceButton'))), 20000, 'Visitor join precall button does not became available in 20s');
+    return browser.wait(until.elementToBeClickable(element(by.id('joinConferenceButton'))), 20000, 'Visitor join precall button does not became available in 20s');
   }
 
   constructUrlC2V (confObject, sessionId) {
