@@ -56,7 +56,17 @@ const genesys = {
       }
     ]
   },
-  subscriptions: {
+  subscriptions: [{
+    entities: [
+      {
+        id: 'v2.users.AGENT_USER_ID.conversationsummary'
+      },
+      {
+        id: 'v2.users.AGENT_USER_ID.conversations.chats'
+      }
+    ]
+  },
+  {
     entities: [
       {
         id: 'v2.users.AGENT_USER_ID.conversationsummary'
@@ -68,7 +78,7 @@ const genesys = {
         id: 'v2.users.AGENT_USER_ID.conversations.chats'
       }
     ]
-  },
+  }],
   chats: [
     { entities: [] },
     {
