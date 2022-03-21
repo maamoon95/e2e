@@ -98,7 +98,7 @@ describe('genesys page tests in iframe mode', function () {
     await genesys.switchToIframe();
     await genesys.hangup.click();
     await genesys.confirm.click();
-    // await genesys.close();
+    await genesys.close();
     await visitor.close();
   });
 
@@ -266,10 +266,10 @@ describe('genesys page tests in popup mode', function () {
 
     await genesys.switchTo();
     // click start video session button to open agent popup
-    await genesys.StartVideoSessionAvailable();
+    await genesys.pickupAvailable();
     // check if popup created
     const windowsBeforePopup = await browser.getAllWindowHandles();
-    await genesys.acceptIncomingCallButton.click();
+    await genesys.acceptClickToVideoButton.click();
     const agent = await genesys.popupCreated(windowsBeforePopup);
 
     // verify  agent
