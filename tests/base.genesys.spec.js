@@ -247,7 +247,7 @@ describe('genesys page tests in popup mode', function () {
     mockProxy.stopAndClean();
   });
 
-  it('outbound call: invite visitor, agent is in popup', async function () {
+  it('outbound call: invite visitor, open agent in popup by pickup button', async function () {
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
@@ -272,6 +272,60 @@ describe('genesys page tests in popup mode', function () {
     const windowsBeforePopup = await browser.getAllWindowHandles();
     await genesys.acceptClickToVideoButton.click();
     const agent = await genesys.popupCreated(windowsBeforePopup);
+
+    // verify  agent
+    await agent.switchTo();
+    expect(await agent.localVideoStarted()).toBeTruthy();
+    await agent.remoteVideoStarted();
+    await expect(agent.localvideo.getAttribute('readyState')).toEqual('4');
+
+    // switch to visitor and verify we have local and remote video
+    await visitor.switchTo();
+    await visitor.localVideoStarted();
+    expect(await visitor.localvideo.getAttribute('readyState')).toEqual('4');
+    await visitor.remoteVideoStarted();
+
+    // terminate session by agent red button
+    await agent.switchTo();
+    await agent.hangup.click();
+    await agent.confirm.click();
+
+    await visitor.switchTo();
+    await visitor.verifyRedirect(REDIRECT_URL);
+    // except exception
+    expect(agent.switchTo())
+      .toThrow('NoSuchWindowError')
+      .catch(function (e) { log.debug('handle exception to avoid crash', e); });
+  });
+
+  it('outbound call: invite visitor, open agent first in popup', async function () {
+    // construct genesys url by pak, env, clientId
+    const genesysUrl = genesys.constructUrl(config.test_env);
+    // open genesys page
+    await genesys.openAsNew(genesysUrl);
+    // click start video button
+    await genesys.authorized(accessToken);
+    // check is websocket conencted
+    await mockProxy.isConnected();
+    // check c2v button and click it
+    await genesys.c2vAvailable();
+    await genesys.startVideoButton.click();
+
+    // get generated visitor url from genesys page
+    visitorUrl = await genesys.getVisitorUrl();
+
+    // click start video session button to open agent popup
+    await genesys.StartVideoSessionAvailable();
+    // check if popup created
+    const windowsBeforePopup = await browser.getAllWindowHandles();
+    await genesys.acceptIncomingCallButton.click();
+    const agent = await genesys.popupCreated(windowsBeforePopup);
+
+    await agent.switchTo();
+    await agent.previewVideoStarted();
+
+    // open visitor page and join to the call
+    await visitor.openAsNew(visitorUrl);
 
     // verify  agent
     await agent.switchTo();
