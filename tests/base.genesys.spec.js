@@ -109,7 +109,7 @@ describe('genesys page tests in iframe mode', function () {
     mockProxy.stopAndClean();
   });
 
-  xit('outbound call: invite visitor, agent is in iframe', async function () {
+  it('outbound call: invite visitor, agent is in iframe', async function () {
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
@@ -141,7 +141,7 @@ describe('genesys page tests in iframe mode', function () {
     await visitor.remoteVideoStarted();
   });
 
-  xit('inbound call: create mocked invitation, use pickup button, agent is in iframe', async function () {
+  it('inbound call: create mocked invitation, use pickup button, agent is in iframe', async function () {
     // set mockProxy server to response like there are an active interaction
     // replace chat mock with non-empty resp.
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
@@ -304,7 +304,7 @@ describe('genesys page tests in popup mode', function () {
       .catch(function (e) { log.debug('handle exception to avoid crash', e); });
   });
 
-  xit('outbound call: invite visitor, open agent first in popup', async function () {
+  it('outbound call: invite visitor, open agent first in popup', async function () {
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
@@ -358,7 +358,7 @@ describe('genesys page tests in popup mode', function () {
       .catch(function (e) { log.debug('handle exception to avoid crash', e); });
   });
 
-  xit('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
+  it('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
     // set mockProxy server to response like there are an active interaction
     // replace chat mock with non-empty resp.
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
