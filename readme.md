@@ -85,27 +85,22 @@ mockProxy.mockIt({ path: '/info\\?companyParam=videoengager', method: 'GET' }, r
 mockProxy.mockIt({ path: '/oauth/authorize', method: 'GET' }, responseObject, 302, headerObject);
 
 ```
-
-## About The Tests
-
-VideoEngager e2e tests core tests are consist of 10 different scenarios
-
-agent page configured with console params
-
-1. inbound call : use predefined session id: Agent page loads first
-2. inbound call : use predefined session id: Visitor page loads first
-3. Outbound call: click blue button and load visitor from cloud url
-
-agent page configured url params
-
-4. inbound call : use predefined session id: Agent page loads first
-5. inbound call : use predefined session id: Visitor page loads first
-6. Outbound call: create visitor short url manually with predefined session id
-
-
-Video created in Mocked video engager genesys app page
-
-7. outbound call: invite visitor, agent is in iframe
-8. inbound call: create mocked invitation, use pickup button, agent is in popup
-9. outbound call: invite visitor, agent is in iframe
-10. inbound call: create mocked invitation, use pickup button, agent is in popup
+## VideoEngager e2e tests 
+[Detailed Document About Tests](https://docs.google.com/document/d/1f3fh4smNb-JDJI3wm_p0ajPtv9pzRZQlWJR8c0jxVhg/edit "Detailed Document About Tests").
+Core tests are consist of 11 different scenarios. In summary, these are:
+### Genesys page tests in iframe mode
+1. Outbound call: invite visitor, agent is in iframe
+2. Inbound call: create mocked invitation, use pickup button, agent is in iframe
+### Genesys page tests in popup mode
+3. Outbound call: invite visitor, use pickup button, agent is in popup 
+4. Outbound call: invite visitor, open agent first in popup
+5. Inbound call: create mocked invitation, use pickup button, agent is in popup 
+### Basic video call tests
+#### Configured with Javascript functions
+6. Inbound call, agent page loads first
+7. Inbound call, visitor page loads first 
+8. Outbound call, end it from agent 
+#### Configured with URL Params
+9. Inbound call, agent page loads first
+10. Inbound call, visitor page loads first 
+11. Outbound call, end it from agent
