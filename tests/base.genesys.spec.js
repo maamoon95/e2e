@@ -14,7 +14,6 @@ const PROXY_SERVER_PORT = 9001;
 const SOCKET_SERVER_PORT = 9898;
 const genesysPageLocation = config.test_env.baseURL + '/static/genesys.purecloud.html';
 const REDIRECT_URL = config.test_env.baseURL + '/static/index.html';
-const INVALID_URL = config.test_env.baseURL + '/static/invalid.html';
 const accessToken = veUtil.getUUID();
 const channelId = veUtil.getUUID();
 
@@ -226,7 +225,6 @@ describe('genesys page tests in popup mode', function () {
            visitorShowPrecall: false,
            enablePrecallWorkflow: false,
            inviteUrl: config.test_env.baseURL,
-           invalidUrl: INVALID_URL,
            redirectUrl: REDIRECT_URL
          },
       newTheme: false,
@@ -268,7 +266,7 @@ describe('genesys page tests in popup mode', function () {
     // open visitor page and join to the call
     await visitor.openAsNew(visitorUrl);
     // check if visitor is redirected from short url
-    expect(visitor.verifyShortURLRedirect(config.test_env, INVALID_URL))
+    expect(visitor.verifyShortURLRedirect(config.test_env))
       .toBeTruthy()
       .catch(function (e) { log.debug('handle exception to avoid crash', e); });
 
