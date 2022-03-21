@@ -72,7 +72,7 @@ class Visitor extends Page {
         throw Error('shorturl not found');
       }
       return false;
-    }, 30000, 'cannot validate shorturl redirection url in 5 sec');
+    }, 30000, 'cannot validate shorturl redirection url in 30 sec');
   }
 }
 module.exports = Visitor;

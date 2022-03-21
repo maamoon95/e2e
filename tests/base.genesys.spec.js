@@ -226,6 +226,7 @@ describe('genesys page tests in popup mode', function () {
            visitorShowPrecall: false,
            enablePrecallWorkflow: false,
            inviteUrl: config.test_env.baseURL,
+           invalidUrl: INVALID_URL,
            redirectUrl: REDIRECT_URL
          },
       newTheme: false,
