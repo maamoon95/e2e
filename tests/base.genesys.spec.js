@@ -98,6 +98,7 @@ describe('genesys page tests in iframe mode', function () {
     await genesys.switchToIframe();
     await genesys.hangup.click();
     await genesys.confirm.click();
+    await genesys.switchTo();
     await genesys.close();
     await visitor.close();
   });
