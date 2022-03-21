@@ -39,6 +39,7 @@ class Visitor extends Page {
       // pcfl: true,
       locale: 'en_US'
     };
+
     this.tennantId = confObject.tennantId;
     const encodedTenant = Buffer.from(confObject.tennantId).toString('base64');
     const encodedParam = Buffer.from(JSON.stringify(str)).toString('base64');
@@ -58,6 +59,20 @@ class Visitor extends Page {
       }
       return false;
     }, 30000, 'cannot validate redirect url in 5 sec');
+  }
+
+  async verifyShortURLRedirect (confObject, invalidURL) {
+    const popUpUrl = confObject.baseURL + '/static/popup.html';
+    return browser.wait(async function () {
+      const currentUrl = await browser.getCurrentUrl();
+      if (currentUrl.indexOf(popUpUrl !== -1)) {
+        return true;
+      }
+      if (currentUrl.indexOf(invalidURL !== -1)) {
+        throw Error('shorturl not found');
+      }
+      return false;
+    }, 30000, 'cannot validate shorturl redirection url in 5 sec');
   }
 }
 module.exports = Visitor;
