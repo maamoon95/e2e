@@ -24,8 +24,8 @@ class Visitor extends Page {
     return browser.wait(until.elementToBeClickable(element(by.id('joinConferenceButton'))), 20000, 'Visitor join precall button does not became available in 20s');
   }
 
-  constructUrlC2V (confObject, sessionId) {
-    const str = {
+  constructUrlC2V (confObject, sessionId, transferId = false) {
+    let str = {
       video_on: false,
       sessionId: sessionId,
       hideChat: true,
@@ -39,6 +39,16 @@ class Visitor extends Page {
       // pcfl: true,
       locale: 'en_US'
     };
+    if (transferId) {
+      str = {};
+      str.ac = true;
+      str.transferId = sessionId;
+      str.hideChat = true;
+      str.skip_private = true;
+      str.pcfl = false;
+      str.pcd = false;
+    }
+
     this.tennantId = confObject.tennantId;
     const encodedTenant = Buffer.from(confObject.tennantId).toString('base64');
     const encodedParam = Buffer.from(JSON.stringify(str)).toString('base64');
@@ -58,6 +68,19 @@ class Visitor extends Page {
       }
       return false;
     }, 30000, 'cannot validate redirect url in 5 sec');
+  }
+
+  async verifyShortURLRedirect (redirectUrl, invalidURL) {
+    return browser.wait(async function () {
+      const currentUrl = await browser.getCurrentUrl();
+      if (currentUrl.indexOf('static/popup.html?' !== -1)) {
+        return true;
+      }
+      if (currentUrl.indexOf(invalidURL !== -1)) {
+        throw Error('shorturl not found');
+      }
+      return false;
+    }, 30000, 'cannot validate shorturl redirection url in 5 sec');
   }
 }
 module.exports = Visitor;

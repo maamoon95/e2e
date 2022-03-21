@@ -14,6 +14,7 @@ const PROXY_SERVER_PORT = 9001;
 const SOCKET_SERVER_PORT = 9898;
 const genesysPageLocation = config.test_env.baseURL + '/static/genesys.purecloud.html';
 const REDIRECT_URL = config.test_env.baseURL + '/static/index.html';
+const INVALID_URL = config.test_env.baseURL + '/static/invalid.html';
 const accessToken = veUtil.getUUID();
 const channelId = veUtil.getUUID();
 
@@ -108,7 +109,7 @@ describe('genesys page tests in iframe mode', function () {
     mockProxy.stopAndClean();
   });
 
-  it('outbound call: invite visitor, agent is in iframe', async function () {
+  xit('outbound call: invite visitor, agent is in iframe', async function () {
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
@@ -140,7 +141,7 @@ describe('genesys page tests in iframe mode', function () {
     await visitor.remoteVideoStarted();
   });
 
-  it('inbound call: create mocked invitation, use pickup button, agent is in iframe', async function () {
+  xit('inbound call: create mocked invitation, use pickup button, agent is in iframe', async function () {
     // set mockProxy server to response like there are an active interaction
     // replace chat mock with non-empty resp.
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
@@ -260,10 +261,15 @@ describe('genesys page tests in popup mode', function () {
     await genesys.c2vAvailable();
     await genesys.startVideoButton.click();
 
+    // browser.sleep(1000);
     // get generated visitor url from genesys page
     visitorUrl = await genesys.getVisitorUrl();
     // open visitor page and join to the call
     await visitor.openAsNew(visitorUrl);
+    // check if visitor is redirected from short url
+    expect(visitor.verifyShortURLRedirect(config.test_env, INVALID_URL))
+      .toBeTruthy()
+      .catch(function (e) { log.debug('handle exception to avoid crash', e); });
 
     await genesys.switchTo();
     // click start video session button to open agent popup
@@ -298,7 +304,7 @@ describe('genesys page tests in popup mode', function () {
       .catch(function (e) { log.debug('handle exception to avoid crash', e); });
   });
 
-  it('outbound call: invite visitor, open agent first in popup', async function () {
+  xit('outbound call: invite visitor, open agent first in popup', async function () {
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
@@ -352,7 +358,7 @@ describe('genesys page tests in popup mode', function () {
       .catch(function (e) { log.debug('handle exception to avoid crash', e); });
   });
 
-  it('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
+  xit('inbound call: create mocked invitation, use pickup button, agent is in popup', async function () {
     // set mockProxy server to response like there are an active interaction
     // replace chat mock with non-empty resp.
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
