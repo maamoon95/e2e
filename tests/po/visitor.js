@@ -61,18 +61,20 @@ class Visitor extends Page {
     }, 30000, 'cannot validate redirect url in 5 sec');
   }
 
-  async verifyShortURLRedirect (confObject, invalidURL) {
+  async verifyShortURLRedirect (confObject) {
+    const INVALID_URL = 'https://www.videoengager.com/invalid-url/';
     const popUpUrl = confObject.baseURL + '/static/popup.html';
-    return browser.wait(async function () {
+    const result = await browser.wait(async function () {
       const currentUrl = await browser.getCurrentUrl();
       if (currentUrl.indexOf(popUpUrl !== -1)) {
         return true;
       }
-      if (currentUrl.indexOf(invalidURL !== -1)) {
+      if (currentUrl.indexOf(INVALID_URL !== -1)) {
         throw Error('shorturl not found');
       }
       return false;
     }, 30000, 'cannot validate shorturl redirection url in 30 sec');
+    return result;
   }
 }
 module.exports = Visitor;
