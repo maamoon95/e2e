@@ -122,42 +122,48 @@ const genesys = {
       }
     ]
   },
-  conversations: {
-    entities: [
-      {
-        id: 'CONVERSATION_ID',
-        participants: [
-          {
-            id: 'CUSTOMER_PARTICIPANT_ID',
-            name: 'videoengager.github.io',
-            purpose: 'customer',
-            wrapupRequired: false,
-            attributes: CUSTOMER_ATTRIBUTES,
-            chats: [
-              {
-                state: 'connected',
-                id: 'CUSTOMER_CHAT_ID'
-              }
-            ]
-          },
-          {
-            id: 'AGENT_PARTICIPANT_ID',
-            userId: 'AGENT_USER_ID',
-            purpose: 'agent',
-            wrapupRequired: true,
-            attributes: {
+  conversations: [
+    {
+      entities: []
+    },
+    {
+      entities: [
+        {
+          id: 'CONVERSATION_ID',
+          participants: [
+            {
+              id: 'CUSTOMER_PARTICIPANT_ID',
+              name: 'videoengager.github.io',
+              purpose: 'customer',
+              wrapupRequired: false,
+              attributes: CUSTOMER_ATTRIBUTES,
+              chats: [
+                {
+                  state: 'connected',
+                  id: 'CUSTOMER_CHAT_ID'
+                }
+              ]
             },
-            chats: [
-              {
-                state: 'connected',
-                id: 'AGENT_CHAT_ID'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
+            {
+              id: 'AGENT_PARTICIPANT_ID',
+              userId: 'AGENT_USER_ID',
+              purpose: 'agent',
+              wrapupRequired: true,
+              attributes: {
+              },
+              chats: [
+                {
+                  state: 'connected',
+                  id: 'AGENT_CHAT_ID'
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
   conversationChat: {
     id: 'CONVERSATION_ID',
     participants: [
