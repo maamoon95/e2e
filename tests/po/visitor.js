@@ -64,6 +64,11 @@ class Visitor extends Page {
     return browser.wait(waitingState, 20000, 'waiting to connect state missing for 20 sec');
   }
 
+  async waitingToConnectOrAgent () {
+    const errorMsg = until.visibilityOf(element(by.id('error_message' + this.tennantId)));
+    const waitingState = until.visibilityOf(element(by.id('wd-widget-content-video-waiting' + this.tennantId)));
+    return browser.wait(until.or(errorMsg, waitingState), 10000, 'waiting to connect or waiting for agent fails in 10s');
+  }
   async hasErrorMessageWithText (hangup_text = 'Hang on tight!') {
     return await browser.wait(until.visibilityOf(element(by.id('error_message' + this.tennantId))), 20000, "No error error_message in 20s");
   }
