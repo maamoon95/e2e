@@ -75,5 +75,17 @@ class Visitor extends Page {
       return false;
     }, 30000, 'cannot validate shorturl redirection url in 30 sec');
   }
+
+  async verifyAgentAvailable () {
+    const errorShown = until.invisibilityOf(element(by.id('error_message' + this.tennantId)));
+    const videoLoaded = until.visibilityOf(element(by.id('remoteVideo' + this.tennantId)));
+    const waitingState = until.visibilityOf(element(by.id('waitingToConnect')));
+
+    const notVideoLoaded = until.invisibilityOf(element(by.id('remoteVideo' + this.tennantId)));
+    const notWaitingState = until.invisibilityOf(element(by.id('waitingToConnect')));
+
+    const readyToConnect = until.or(until.and(videoLoaded, notWaitingState), until.and(notVideoLoaded, waitingState));
+    return browser.wait(readyToConnect, 20000, 'waiting to connect state missing for 20 sec');
+  }
 }
 module.exports = Visitor;
