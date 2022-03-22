@@ -127,6 +127,8 @@ describe('genesys page tests in iframe mode', function () {
 
     // open visitor page and join to the call
     await visitor.openAsNew(visitorUrl);
+    expect(await visitor.verifyShortURLRedirect(config.test_env)).toBeTruthy();
+    expect(await visitor.verifyAgentAvailable(config.test_env)).toBeTruthy();
     // switch to genesys page and verify we have local and remote video
     await genesys.switchToIframe();
     expect(await genesys.localVideoStarted()).toBeTruthy();
@@ -155,6 +157,7 @@ describe('genesys page tests in iframe mode', function () {
 
     // open visitor page
     await visitor.openAsNew(visitorUrl);
+    expect(await visitor.verifyAgentAvailable(config.test_env)).toBeTruthy();
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
@@ -267,6 +270,7 @@ describe('genesys page tests in popup mode', function () {
     await visitor.openAsNew(visitorUrl);
     // check if visitor is redirected from short url
     expect(await visitor.verifyShortURLRedirect(config.test_env)).toBeTruthy();
+    expect(await visitor.verifyAgentAvailable(config.test_env)).toBeTruthy();
 
     await genesys.switchTo();
     // click start video session button to open agent popup
@@ -329,7 +333,8 @@ describe('genesys page tests in popup mode', function () {
 
     // open visitor page and join to the call
     await visitor.openAsNew(visitorUrl);
-
+    expect(await visitor.verifyShortURLRedirect(config.test_env)).toBeTruthy();
+    expect(await visitor.verifyAgentAvailable(config.test_env)).toBeTruthy();
     // verify  agent
     await agent.switchTo();
     expect(await agent.localVideoStarted()).toBeTruthy();
@@ -369,6 +374,7 @@ describe('genesys page tests in popup mode', function () {
     // mockProxy.mockIt({ path: '/api/v2/conversations/chats/' + genesysResponses.chats[1].entities[0].id, method: 'GET' }, genesysResponses.messages);
     // open visitor page
     await visitor.openAsNew(visitorUrl);
+    expect(await visitor.verifyAgentAvailable(config.test_env)).toBeTruthy();
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
