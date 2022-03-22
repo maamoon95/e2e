@@ -51,56 +51,21 @@ class Visitor extends Page {
     return constructedUrl;
   }
 
-  async verifyRedirect (redirectUrl) {
-    return browser.wait(async function () {
-      const currentUrl = await browser.getCurrentUrl();
-      if (currentUrl === redirectUrl) {
-        return true;
-      }
-      return false;
-    }, 30000, 'cannot validate redirect url in 5 sec');
+  async shortUrlExpanded (confObject) {
+    return browser.wait(until.urlContains('tennantId'), 30000,
+      'cannot validate shorturl redirection url in 30 sec');
+  }
+  async redirectedTo(redirectUrl) {
+    return browser.wait(until.urlIs(redirectUrl), 20000, 'Visitor URL not ' + redirectUrl + ' in 20s');
   }
 
-  async verifyShortURLRedirect (confObject) {
-    const INVALID_URL = 'https://www.videoengager.com/invalid-url/';
-    const popUpUrl = confObject.baseURL + '/static/popup.html';
-    return browser.wait(async function () {
-      const currentUrl = await browser.getCurrentUrl();
-      if (currentUrl.indexOf(popUpUrl) !== -1) {
-        return true;
-      }
-      if (currentUrl.indexOf(INVALID_URL) !== -1) {
-        throw Error('shorturl not found, redirected to invalid url page');
-      }
-      return false;
-    }, 30000, 'cannot validate shorturl redirection url in 30 sec');
+  async inWaitingState () {
+    const waitingState = until.visibilityOf(element(by.id('wd-widget-content-video-waiting' + this.tennantId)));
+    return browser.wait(waitingState, 20000, 'waiting to connect state missing for 20 sec');
   }
 
-  async verifyReady () {
-    const errorShown = until.invisibilityOf(element(by.id('error_message' + this.tennantId)));
-    const videoLoaded = until.visibilityOf(element(by.id('remoteVideo' + this.tennantId)));
-    const waitingState = until.visibilityOf(element(by.id('waitingToConnect')));
-
-    const notVideoLoaded = until.invisibilityOf(element(by.id('remoteVideo' + this.tennantId)));
-    const notWaitingState = until.invisibilityOf(element(by.id('waitingToConnect')));
-
-    const readyToConnect = until.or(until.and(videoLoaded, notWaitingState), until.and(notVideoLoaded, waitingState));
-    return browser.wait(readyToConnect, 20000, 'waiting to connect state missing for 20 sec');
-  }
-
-  async verifyHang (hangup_text = 'Hang on tight!') {
-    const TENANTID = this.tennantId;
-    const errorMessageText = element(by.id('error_message_text' + TENANTID));
-    await browser.wait(until.presenceOf(errorMessageText));
-    return browser.wait(async function () {
-      const errorMessage = element(by.id('error_message' + TENANTID));
-      const errorMessageShown = await errorMessage.isDisplayed();
-      const text = await errorMessageText.getText();
-      if (text.indexOf(hangup_text) !== -1 && errorMessageShown) {
-        return true;
-      }
-      return false;
-    }, 20000, 'visitor is not on hangup state for 20 sec');
+  async hasErrorMessageWithText (hangup_text = 'Hang on tight!') {
+    return await browser.wait(until.visibilityOf(element(by.id('error_message' + this.tennantId))), 20000, "No error error_message in 20s");
   }
 }
 module.exports = Visitor;
