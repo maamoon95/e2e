@@ -159,14 +159,11 @@ describe('genesys page tests in iframe mode', function () {
     await visitor.openAsNew(visitorUrl);
     // check visitor hang state
     expect(await visitor.shortUrlExpanded());
-        await browser.sleep(40000);
 
     expect(await visitor.waitingToConnectOrAgent()).toBeTruthy();
-    await browser.sleep(4000);
  
     // construct genesys url by pak, env, clientId
         //expect(await visitor.verifyReady(config.test_env)).toBeTruthy();
-    await browser.sleep(4000);
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
     await genesys.openAsNew(genesysUrl);
@@ -384,7 +381,7 @@ describe('genesys page tests in popup mode', function () {
     await visitor.openAsNew(visitorUrl);
     // check visitor hang state
     expect(await visitor.shortUrlExpanded()).toBeTruthy();
-    expect(await visitor.hasErrorMessageWithText()).toBeTruthy();
+    expect(await visitor.waitingToConnectOrAgent()).toBeTruthy();
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
