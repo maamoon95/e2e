@@ -127,8 +127,8 @@ describe('genesys page tests in iframe mode', function () {
 
     // open visitor page and join to the call
     await visitor.openAsNew(visitorUrl);
-    expect(await visitor.verifyShortURLRedirect(config.test_env)).toBeTruthy();
-    expect(await visitor.verifyReady(config.test_env)).toBeTruthy();
+    expect(await visitor.shortUrlExpanded(config.test_env)).toBeTruthy();
+    expect(await visitor.inWaitingState(config.test_env)).toBeTruthy();
     // switch to genesys page and verify we have local and remote video
     await genesys.switchToIframe();
     expect(await genesys.localVideoStarted()).toBeTruthy();
@@ -158,8 +158,13 @@ describe('genesys page tests in iframe mode', function () {
     // open visitor page
     await visitor.openAsNew(visitorUrl);
     // check visitor hang state
-    expect(await visitor.verifyHang()).toBeTruthy();
+    expect(await visitor.shortUrlExpanded());
+    expect(await visitor.hasErrorMessageWithText()).toBeTruthy();
+    await browser.sleep(4000);
+ 
     // construct genesys url by pak, env, clientId
+        //expect(await visitor.verifyReady(config.test_env)).toBeTruthy();
+    await browser.sleep(4000);
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
     await genesys.openAsNew(genesysUrl);
@@ -271,9 +276,8 @@ describe('genesys page tests in popup mode', function () {
     // open visitor page and join to the call
     await visitor.openAsNew(visitorUrl);
     // check if visitor is redirected from short url
-    expect(await visitor.verifyShortURLRedirect(config.test_env)).toBeTruthy();
-    expect(await visitor.verifyReady(config.test_env)).toBeTruthy();
-
+    expect(await visitor.shortUrlExpanded(config.test_env)).toBeTruthy();
+    expect(await visitor.inWaitingState(config.test_env)).toBeTruthy();
     await genesys.switchTo();
     // click start video session button to open agent popup
     await genesys.pickupAvailable();
@@ -300,7 +304,7 @@ describe('genesys page tests in popup mode', function () {
     await agent.confirm.click();
 
     await visitor.switchTo();
-    await visitor.verifyRedirect(REDIRECT_URL);
+    expect(await visitor.redirectedTo(REDIRECT_URL)).toBeTruthy();
     // except exception
     expect(agent.switchTo())
       .toThrow('NoSuchWindowError')
@@ -335,8 +339,8 @@ describe('genesys page tests in popup mode', function () {
 
     // open visitor page and join to the call
     await visitor.openAsNew(visitorUrl);
-    expect(await visitor.verifyShortURLRedirect(config.test_env)).toBeTruthy();
-    expect(await visitor.verifyReady(config.test_env)).toBeTruthy();
+    expect(await visitor.shortUrlExpanded(config.test_env)).toBeTruthy();
+    expect(await visitor.inWaitingState(config.test_env)).toBeTruthy();
     // verify  agent
     await agent.switchTo();
     expect(await agent.localVideoStarted()).toBeTruthy();
@@ -355,7 +359,7 @@ describe('genesys page tests in popup mode', function () {
     await agent.confirm.click();
 
     await visitor.switchTo();
-    await visitor.verifyRedirect(REDIRECT_URL);
+    expect(await visitor.redirectedTo(REDIRECT_URL)).toBeTruthy();
     // except exception
     expect(agent.switchTo())
       .toThrow('NoSuchWindowError')
@@ -377,7 +381,8 @@ describe('genesys page tests in popup mode', function () {
     // open visitor page
     await visitor.openAsNew(visitorUrl);
     // check visitor hang state
-    expect(await visitor.verifyHang()).toBeTruthy();
+    expect(await visitor.shortUrlExpanded()).toBeTruthy();
+    expect(await visitor.hasErrorMessageWithText()).toBeTruthy();
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
@@ -411,7 +416,7 @@ describe('genesys page tests in popup mode', function () {
     await agent.confirm.click();
 
     await visitor.switchTo();
-    await visitor.verifyRedirect(REDIRECT_URL);
+    await visitor.redirectedTo(REDIRECT_URL);
     // except exception
     expect(agent.switchTo())
       .toThrow('NoSuchWindowError')
