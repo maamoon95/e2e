@@ -266,9 +266,7 @@ describe('genesys page tests in popup mode', function () {
     // open visitor page and join to the call
     await visitor.openAsNew(visitorUrl);
     // check if visitor is redirected from short url
-    expect(visitor.verifyShortURLRedirect(config.test_env))
-      .toBeTruthy()
-      .catch(function (e) { log.debug('handle exception to avoid crash', e); });
+    expect(await visitor.verifyShortURLRedirect(config.test_env)).toBeTruthy();
 
     await genesys.switchTo();
     // click start video session button to open agent popup
