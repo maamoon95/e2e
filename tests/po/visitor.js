@@ -56,7 +56,7 @@ class Visitor extends Page {
       'cannot validate shorturl redirection url in 30 sec');
   }
   async redirectedTo(redirectUrl) {
-    return browser.wait(until.urlIs(redirectUrl));
+    return browser.wait(until.urlIs(redirectUrl), 20000, 'Visitor URL not ' + redirectUrl + ' in 20s');
   }
 
   async inWaitingState () {
