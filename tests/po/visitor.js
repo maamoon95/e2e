@@ -76,7 +76,7 @@ class Visitor extends Page {
     }, 30000, 'cannot validate shorturl redirection url in 30 sec');
   }
 
-  async verifyAgentAvailable () {
+  async verifyReady () {
     const errorShown = until.invisibilityOf(element(by.id('error_message' + this.tennantId)));
     const videoLoaded = until.visibilityOf(element(by.id('remoteVideo' + this.tennantId)));
     const waitingState = until.visibilityOf(element(by.id('waitingToConnect')));
