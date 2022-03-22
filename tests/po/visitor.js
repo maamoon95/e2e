@@ -87,5 +87,20 @@ class Visitor extends Page {
     const readyToConnect = until.or(until.and(videoLoaded, notWaitingState), until.and(notVideoLoaded, waitingState));
     return browser.wait(readyToConnect, 20000, 'waiting to connect state missing for 20 sec');
   }
+
+  async verifyHang (hangup_text = 'Hang on tight!') {
+    const TENANTID = this.tennantId;
+    const errorMessageText = element(by.id('error_message_text' + TENANTID));
+    await browser.wait(until.presenceOf(errorMessageText));
+    return browser.wait(async function () {
+      const errorMessage = element(by.id('error_message' + TENANTID));
+      const errorMessageShown = await errorMessage.isDisplayed();
+      const text = await errorMessageText.getText();
+      if (text.indexOf(hangup_text) !== -1 && errorMessageShown) {
+        return true;
+      }
+      return false;
+    }, 20000, 'visitor is not on hangup state for 20 sec');
+  }
 }
 module.exports = Visitor;
