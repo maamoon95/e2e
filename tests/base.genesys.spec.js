@@ -157,7 +157,8 @@ describe('genesys page tests in iframe mode', function () {
 
     // open visitor page
     await visitor.openAsNew(visitorUrl);
-    expect(await visitor.verifyReady(config.test_env)).toBeTruthy();
+    // check visitor hang state
+    expect(await visitor.verifyHang()).toBeTruthy();
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
@@ -166,6 +167,7 @@ describe('genesys page tests in iframe mode', function () {
     await genesys.authorized(accessToken);
     // check if websocket conencted
     await mockProxy.isConnected();
+
     // check pickup button and click it
     await genesys.pickupAvailable();
     await genesys.acceptClickToVideoButton.click();
@@ -374,7 +376,8 @@ describe('genesys page tests in popup mode', function () {
     // mockProxy.mockIt({ path: '/api/v2/conversations/chats/' + genesysResponses.chats[1].entities[0].id, method: 'GET' }, genesysResponses.messages);
     // open visitor page
     await visitor.openAsNew(visitorUrl);
-    expect(await visitor.verifyReady(config.test_env)).toBeTruthy();
+    // check visitor hang state
+    expect(await visitor.verifyHang()).toBeTruthy();
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
