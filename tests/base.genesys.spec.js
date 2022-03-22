@@ -142,7 +142,7 @@ describe('genesys page tests in iframe mode', function () {
     await visitor.remoteVideoStarted();
   });
 
-  it('inbound call: create mocked invitation, use pickup button, agent is in iframe', async function () {
+  it('should accept inbound call in genesys page, visitor popup opens first', async function () {
     // set mockProxy server to response like there are an active interaction
     // replace chat mock with non-empty resp.
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
@@ -159,12 +159,11 @@ describe('genesys page tests in iframe mode', function () {
     await visitor.openAsNew(visitorUrl);
     // check visitor hang state
     expect(await visitor.shortUrlExpanded());
-    expect(await visitor.hasErrorMessageWithText()).toBeTruthy();
-    await browser.sleep(4000);
+
+    expect(await visitor.waitingToConnectOrAgent()).toBeTruthy();
  
     // construct genesys url by pak, env, clientId
         //expect(await visitor.verifyReady(config.test_env)).toBeTruthy();
-    await browser.sleep(4000);
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
     await genesys.openAsNew(genesysUrl);
@@ -382,7 +381,7 @@ describe('genesys page tests in popup mode', function () {
     await visitor.openAsNew(visitorUrl);
     // check visitor hang state
     expect(await visitor.shortUrlExpanded()).toBeTruthy();
-    expect(await visitor.hasErrorMessageWithText()).toBeTruthy();
+    expect(await visitor.waitingToConnectOrAgent()).toBeTruthy();
     // construct genesys url by pak, env, clientId
     const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
