@@ -122,6 +122,7 @@ describe('genesys page tests in iframe mode', function () {
     await genesys.startVideoButton.click();
     // check if iframe created
     await genesys.iframeCreated();
+    await browser.sleep(1000);
     // get generated visitor url from genesys page
     visitorUrl = await genesys.getVisitorUrl();
 
@@ -268,6 +269,7 @@ describe('genesys page tests in popup mode', function () {
     // check c2v button and click it
     await genesys.c2vAvailable();
     await genesys.startVideoButton.click();
+    await browser.sleep(1000);
 
     // browser.sleep(1000);
     // get generated visitor url from genesys page
@@ -322,6 +324,7 @@ describe('genesys page tests in popup mode', function () {
     // check c2v button and click it
     await genesys.c2vAvailable();
     await genesys.startVideoButton.click();
+    await browser.sleep(1000);
 
     // get generated visitor url from genesys page
     visitorUrl = await genesys.getVisitorUrl();
