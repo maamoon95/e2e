@@ -6,8 +6,6 @@ const config = require('./config');
 const log = require('./logger');
 const { match } = require('path-to-regexp');
 
-log.init(config.logger);
-
 let socketConnected = false;
 let connection;
 let sslProxy;

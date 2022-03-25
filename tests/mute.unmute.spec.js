@@ -5,7 +5,6 @@ const common = require('./lib/common');
 const config = require('./lib/config');
 const assert = require('assert');
 const TIMEOUT = 1000 * 5 * 10;
-log.init(config.logger);
 
 describe('disable remote video test', function () {
   beforeEach(function () {

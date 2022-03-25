@@ -5,7 +5,6 @@ const log = require('./logger');
 const dbAPI = require('./dbAPI');
 const veUtil = require('./veUtil');
 const assert = require('assert');
-log.init(config.logger);
 
 const TIMEOUT = 30000; // 30 sec
 

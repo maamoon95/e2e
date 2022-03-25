@@ -2,7 +2,6 @@ const uuid = require('uuid');
 const dbAPI = require('./dbAPI');
 const log = require('./logger');
 const config = require('./config');
-log.init(config.logger);
 
 const veUtils = {
   // to avoid mant imports and the reason of common usage use uuid from here

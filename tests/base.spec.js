@@ -3,8 +3,8 @@ const { browser } = require('protractor');
 const config = require('./lib/config');
 const log = require('./lib/logger');
 const veUtil = require('./lib/veUtil');
-log.init(config.logger);
 
+const Page = require('./po/page');
 // Import Agent class definition
 const Agent = require('./po/agent');
 // Import visitor
@@ -24,7 +24,21 @@ describe('Basic video call tests', function () {
     await veUtil.authenticate(config.test_env);
     // Lets prepare some sane settings.
     // Don't obscure view
-    await veUtil.setSafety(true, false);
+    await veUtil.authenticate();
+    await veUtil.setBrokerageProfile({
+      safety: {
+        enable: true,
+        disableRemoteCamera: false
+      },
+      branding:
+        {
+          visitorShowPrecall: false,
+          enablePrecallWorkflow: false,
+          inviteUrl: config.test_env.baseURL
+        },
+      newTheme: false,
+      isPopup: false
+    });
   });
 
   describe('Configured with Javascript functions', function () {
@@ -35,9 +49,16 @@ describe('Basic video call tests', function () {
     });
 
     afterEach(async function () {
-      await agent.switchTo();
-      await agent.hangup.click();
-      await agent.confirm.click();
+      try {
+        await agent.switchTo();
+        await agent.hangup.click();
+        await agent.confirm.click();
+        await visitor.close();
+      } catch (e) {
+        log.error(e.stack);
+      }
+      // close remaining pages
+      Page.closeAllPages();
     });
 
     it('should make inbound call, agent page loads first', async function () {
@@ -134,9 +155,16 @@ describe('Basic video call tests', function () {
     });
 
     afterEach(async function () {
-      await agent.switchTo();
-      await agent.hangup.click();
-      await agent.confirm.click();
+      try {
+        await agent.switchTo();
+        await agent.hangup.click();
+        await agent.confirm.click();
+        await visitor.close();
+      } catch (e) {
+        log.error(e.stack);
+      }
+      // close remaining pages
+      Page.closeAllPages();
     });
 
     it('should make inbound call, agent page loads first', async function () {
@@ -200,7 +228,7 @@ describe('Basic video call tests', function () {
       await agent.previewVideoStarted();
       // open visitor page
       await visitor.openAsNew(visitorUrl);
-
+      expect(await visitor.shortUrlExpanded()).toBeTruthy();
       // switch to agent page and verify we have local and remote video
       await agent.switchTo();
       expect(await agent.localVideoStarted()).toBeTruthy();
