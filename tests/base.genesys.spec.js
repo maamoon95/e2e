@@ -252,6 +252,8 @@ describe('genesys page tests in popup mode', function () {
 
   afterEach(async function () {
     try {
+      await visitor.switchTo();
+      log.debug(await browser.getCurrentUrl());
       await visitor.close();
       await genesys.close();
     } catch (e) {
@@ -280,7 +282,6 @@ describe('genesys page tests in popup mode', function () {
     await genesys.startVideoButton.click();
     await browser.sleep(1000);
 
-    // browser.sleep(1000);
     // get generated visitor url from genesys page
     visitorUrl = await genesys.getVisitorUrl();
     // open visitor page and join to the call
