@@ -4,7 +4,6 @@ const Agent = require('./agent');
 const until = browser.ExpectedConditions;
 const config = require('../lib/config');
 const log = require('../lib/logger');
-log.init(config.logger);
 class Genesys extends Agent {
   constructor () {
     super();
@@ -44,7 +43,7 @@ class Genesys extends Agent {
    * @returns promise
    */
   async StartVideoSessionAvailable () {
-    return browser.wait(until.elementToBeClickable(element(by.id('acceptIncomingCallButton'))), 20000, 'acceptIncomingCallButton does not became available in 20s');
+    return browser.wait(until.elementToBeClickable(element(by.id('acceptIncomingCallButton'))), global.TIMEOUT, 'acceptIncomingCallButton does not became available in ' + global.TIMEOUT + 's');
   }
 
   /**
@@ -52,7 +51,7 @@ class Genesys extends Agent {
    * @returns promise
    */
   async c2vAvailable () {
-    return browser.wait(until.elementToBeClickable(element(by.id('startVideoButton'))), 20000, 'startVideoButton does not became available in 20s');
+    return browser.wait(until.elementToBeClickable(element(by.id('startVideoButton'))), global.TIMEOUT, 'startVideoButton does not became available in ' + global.TIMEOUT + 's');
   }
 
   /**
@@ -60,7 +59,7 @@ class Genesys extends Agent {
    * @returns promise
    */
   async pickupAvailable () {
-    return browser.wait(until.elementToBeClickable(element(by.id('acceptClickToVideoButton'))), 20000, 'acceptClickToVideoButton does not became available in 20s');
+    return browser.wait(until.elementToBeClickable(element(by.id('acceptClickToVideoButton'))), global.TIMEOUT, 'acceptClickToVideoButton does not became available in ' + global.TIMEOUT + 's');
   }
 
   /**
@@ -68,7 +67,7 @@ class Genesys extends Agent {
    * @returns promise
    */
   async iframeCreated () {
-    return browser.wait(until.visibilityOf(element(by.id('genesysIframe'))), 20000, 'genesysIframe does not became available in 20s');
+    return browser.wait(until.visibilityOf(element(by.id('genesysIframe'))), global.TIMEOUT, 'genesysIframe does not became available in ' + global.TIMEOUT + 's');
   }
 
   /**
@@ -109,7 +108,7 @@ class Genesys extends Agent {
         return true;
       }
       return false;
-    }, 20000, 'not authorized in 20s');
+    }, global.TIMEOUT, 'not authorized in ' + global.TIMEOUT + 's');
   }
 
   /**

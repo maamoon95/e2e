@@ -4,11 +4,16 @@
 const config = require('./tests/lib/config');
 const SpecReporter = require('jasmine-spec-reporter').SpecReporter;
 const HtmlReporter = require('protractor-beautiful-reporter');
+// init logger
+const log = require('./tests/lib/logger');
+log.init(config.logger);
+
+global.TIMEOUT = 30000;
 
 const protractorConfig = {
   // The timeout for each script run on the browser. This should be longer
   // than the maximum time your application needs to stabilize between tasks.
-  allScriptsTimeout: 30000,
+  allScriptsTimeout: global.TIMEOUT,
   // A base URL for your application under test. Calls to protractor.get()
   // with relative paths will be prepended with this.
   baseUrl: config.test_env.baseURL,

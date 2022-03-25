@@ -5,7 +5,6 @@ const log = require('./lib/logger');
 const common = require('./lib/common');
 const config = require('./lib/config');
 const assert = require('assert');
-log.init(config.logger);
 
 const TIMEOUT = 1000 * 5 * 10; // 50 sec
 
