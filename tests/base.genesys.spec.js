@@ -75,6 +75,9 @@ describe('genesys page tests in iframe mode', function () {
     await mockProxy.startSocketServer(SOCKET_SERVER_PORT);
     // authenticate and set to default db
     await veUtil.authenticate();
+  });
+
+  beforeEach(async function () {
     await veUtil.setBrokerageProfile({
       branding:
         {
@@ -85,9 +88,6 @@ describe('genesys page tests in iframe mode', function () {
       newTheme: false,
       isPopup: false
     });
-  });
-
-  beforeEach(async function () {
     VISITOR_SESSION_ID = veUtil.getUUID();
     visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
   });
@@ -232,6 +232,9 @@ describe('genesys page tests in popup mode', function () {
     await mockProxy.startHttpServer(PROXY_SERVER_PORT);
     await mockProxy.startSocketServer(SOCKET_SERVER_PORT);
     await veUtil.authenticate();
+  });
+
+  beforeEach(async function () {
     await veUtil.setBrokerageProfile({
       branding:
          {
@@ -243,9 +246,6 @@ describe('genesys page tests in popup mode', function () {
       newTheme: false,
       isPopup: true
     });
-  });
-
-  beforeEach(async function () {
     VISITOR_SESSION_ID = veUtil.getUUID();
     visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
   });

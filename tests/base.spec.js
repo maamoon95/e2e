@@ -20,29 +20,28 @@ describe('Basic video call tests', function () {
   let visitorUrl;
 
   beforeAll(async function () {
-    // authenticate agent
-    await veUtil.authenticate(config.test_env);
     // Lets prepare some sane settings.
     // Don't obscure view
     await veUtil.authenticate();
-    await veUtil.setBrokerageProfile({
-      safety: {
-        enable: true,
-        disableRemoteCamera: false
-      },
-      branding:
-        {
-          visitorShowPrecall: false,
-          enablePrecallWorkflow: false,
-          inviteUrl: config.test_env.baseURL
-        },
-      newTheme: false,
-      isPopup: false
-    });
   });
 
   describe('Configured with Javascript functions', function () {
-    beforeEach(function () {
+    beforeEach(async function () {
+      await veUtil.setBrokerageProfile({
+        safety: {
+          enable: true,
+          disableRemoteCamera: false
+        },
+        branding:
+          {
+            visitorShowPrecall: false,
+            enablePrecallWorkflow: false,
+            inviteUrl: config.test_env.baseURL
+          },
+        newTheme: false,
+        isPopup: false
+      });
+
       VISITOR_SESSION_ID = veUtil.getUUID();
       agentUrl = agent.constructUrl(config.test_env);
       visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
@@ -148,6 +147,20 @@ describe('Basic video call tests', function () {
     });
 
     beforeEach(async function () {
+      await veUtil.setBrokerageProfile({
+        safety: {
+          enable: true,
+          disableRemoteCamera: false
+        },
+        branding:
+          {
+            visitorShowPrecall: false,
+            enablePrecallWorkflow: false,
+            inviteUrl: config.test_env.baseURL
+          },
+        newTheme: false,
+        isPopup: false
+      });
       // renew visitor id
       VISITOR_SESSION_ID = veUtil.getUUID();
       // generate visitor url using new visitor id
