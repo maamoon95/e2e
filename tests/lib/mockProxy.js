@@ -192,7 +192,19 @@ class MockProxy {
     return new Promise(function (resolve, reject) {
       try {
         httpServer = http.createServer(function (req, res) {
-          log.debug('REQUEST rcvd===> Method:' + req.method + ' PATH:' + req.url);
+          let rawData = '';
+          req.on('data', (chunk) => {
+            rawData += chunk;
+          });
+          req.on('end', () => {
+            try {
+              log.debug('REQUEST rcvd===> Method:' + req.method + ' PATH:' + req.url);
+              const parsedData = JSON.parse(rawData);
+              console.log('REQUEST body===> ', parsedData);
+            } catch (e) {
+              console.error(e.message);
+            }
+          });
 
           const mresp = mockObjects.find(function (element) {
             const rule = match(element.rule.path);

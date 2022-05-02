@@ -212,21 +212,6 @@ describe('genesys page tests in popup mode', function () {
     genesysResponses.getChannels.entities[0].id = channelId;
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
 
-    const authHeader = {
-      location: genesysPageLocation + '#access_token=' + accessToken + '&expires_in=86399&token_type=bearer'
-    };
-
-    mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authHeader);
-    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
-    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
-    mockProxy.mockIt({ path: '/api/v2/users/:userId/presences/PURECLOUD', method: 'PATCH' }, genesysResponses.purecloud);
-    mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'POST' }, genesysResponses.channels);
-    mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'GET' }, genesysResponses.getChannels);
-    mockProxy.mockIt({ path: '/api/v2/conversations/chats', method: 'GET' }, genesysResponses.chats[0]);
-    mockProxy.mockIt({ path: '/api/v2/notifications/channels/' + channelId + '/subscriptions', method: 'GET' }, genesysResponses.subscriptions[0]);
-    mockProxy.mockIt({ path: '/api/v2/notifications/channels/' + channelId + '/subscriptions', method: 'PUT' }, genesysResponses.subscriptions[0]);
-    mockProxy.mockIt({ path: '/api/v2/conversations', method: 'GET' }, genesysResponses.conversations[0]);
-
     // await mockProxy.startHttpProxyServer(PROXY_SERVER_PORT);
     await mockProxy.startSSlProxyServer(PROXY_SERVER_PORT);
     await mockProxy.startHttpServer(PROXY_SERVER_PORT);
@@ -249,6 +234,20 @@ describe('genesys page tests in popup mode', function () {
   });
 
   beforeEach(async function () {
+    const authHeader = {
+      location: genesysPageLocation + '#access_token=' + accessToken + '&expires_in=86399&token_type=bearer'
+    };
+    mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authHeader);
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
+    mockProxy.mockIt({ path: '/api/v2/users/:userId/presences/PURECLOUD', method: 'PATCH' }, genesysResponses.purecloud);
+    mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'POST' }, genesysResponses.channels);
+    mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'GET' }, genesysResponses.getChannels);
+    mockProxy.mockIt({ path: '/api/v2/conversations/chats', method: 'GET' }, genesysResponses.chats[0]);
+    mockProxy.mockIt({ path: '/api/v2/notifications/channels/' + channelId + '/subscriptions', method: 'GET' }, genesysResponses.subscriptions[0]);
+    mockProxy.mockIt({ path: '/api/v2/notifications/channels/' + channelId + '/subscriptions', method: 'PUT' }, genesysResponses.subscriptions[0]);
+    mockProxy.mockIt({ path: '/api/v2/conversations', method: 'GET' }, genesysResponses.conversations[0]);
+
     VISITOR_SESSION_ID = veUtil.getUUID();
     visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
   });
@@ -264,6 +263,7 @@ describe('genesys page tests in popup mode', function () {
     }
     // close remaining pages
     Genesys.closeAllPages();
+    mockProxy.cleanMocks();
   });
 
   afterAll(async function () {
@@ -438,9 +438,9 @@ describe('genesys page tests in popup mode', function () {
       .catch(function (e) { log.debug('handle exception to avoid crash', e); });
   });
 
-  // run this test standalone by:
-  // NODE_ENV=staging npx protractor --specs='tests/base.genesys.spec.js' --grep="inbound call: create scheduled"
-  it('inbound call: create scheduled callback invitation, use pickup button', async function () {
+  // run this test standalone by this command:
+  // NODE_ENV=test npx protractor --specs='tests/base.genesys.spec.js' --grep="inbound: accept incoming voice"
+  it('inbound: accept incoming voice, invite via sms, pickup from agent', async function () {
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
     mockProxy.mockIt({ path: '/api/v2/conversations/calls', method: 'GET' }, genesysResponses.calls[0]);
     mockProxy.mockIt({ path: '/api/v2/conversations/messages', method: 'POST' }, genesysResponses.conversationsMessages);
@@ -456,10 +456,12 @@ describe('genesys page tests in popup mode', function () {
     await genesys.authorized(accessToken);
     // check is websocket conencted
     await mockProxy.isConnected();
+    await browser.sleep(1000);
     await mockProxy.sendSocketMessage(genesysResponses.incomingVoiceAccepted);
     // check if sms button visible
     await genesys.sendSmsAndInviteAvailable();
     await genesys.sendSmsAndInvite.click();
+
     // REST IS THE SAME AS OUTBOUND
     await browser.sleep(1000);
     // get generated visitor url from genesys page
@@ -502,6 +504,35 @@ describe('genesys page tests in popup mode', function () {
       .toThrow('NoSuchWindowError')
       .catch(function (e) { log.debug('handle exception to avoid crash', e); });
 
+    // check if sms button is invisible
+    await genesys.sendSmsAndInviteInvisible();
+  });
+
+  // run this test standalone by this command:
+  // NODE_ENV=test npx protractor --specs='tests/base.genesys.spec.js' --grep="inbound: make a voice, terminate"
+  it('inbound: make a voice, terminate and wrap it up', async function () {
+    genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
+    mockProxy.mockIt({ path: '/api/v2/conversations/calls', method: 'GET' }, genesysResponses.calls[0]);
+    mockProxy.mockIt({ path: '/api/v2/conversations/messages', method: 'POST' }, genesysResponses.conversationsMessages);
+    mockProxy.mockIt({ path: '/api/v2/conversations/CONVERSATION_ID', method: 'GET' }, genesysResponses.conversationsGet);
+    mockProxy.mockIt({ path: '/api/v2/conversations/messages/CONVERSATION_ID', method: 'PATCH' }, { toAddress: '+90' });
+    mockProxy.mockIt({ path: '/api/v2/conversations/messages/CONVERSATION_ID/communications/COMMUNICATION_ID/messages', method: 'POST' }, genesysResponses.communicationsMessages);
+
+    // construct genesys url by pak, env, clientId
+    const genesysUrl = genesys.constructUrl(config.test_env);
+    // open genesys page
+    await genesys.openAsNew(genesysUrl);
+    // click start video button
+    await genesys.authorized(accessToken);
+    // check is websocket conencted
+    await mockProxy.isConnected();
+    await browser.sleep(1000);
+    await mockProxy.sendSocketMessage(genesysResponses.incomingVoiceAccepted);
+    // check if sms button visible
+    await genesys.sendSmsAndInviteAvailable();
+    await mockProxy.sendSocketMessage(genesysResponses.incomingVoiceTerminated);
+    await genesys.sendSmsAndInviteAvailable();
+    await mockProxy.sendSocketMessage(genesysResponses.incomingVoiceWrapUp);
     await genesys.sendSmsAndInviteInvisible();
   });
 });
