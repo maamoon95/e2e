@@ -47,6 +47,7 @@ describe('genesys page tests in iframe mode', function () {
     mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authHeader);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization%2Cauthorization', method: 'GET' }, genesysResponses.userResponseWithAuth);
     mockProxy.mockIt({ path: '/api/v2/users/:userId/presences/PURECLOUD', method: 'PATCH' }, genesysResponses.purecloud);
     mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'POST' }, genesysResponses.channels);
     mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'GET' }, genesysResponses.getChannels);
@@ -219,6 +220,7 @@ describe('genesys page tests in popup mode', function () {
     mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authHeader);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization\\%2Cauthorization', method: 'GET' }, genesysResponses.userResponseWithAuth);
     mockProxy.mockIt({ path: '/api/v2/users/:userId/presences/PURECLOUD', method: 'PATCH' }, genesysResponses.purecloud);
     mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'POST' }, genesysResponses.channels);
     mockProxy.mockIt({ path: '/api/v2/notifications/channels', method: 'GET' }, genesysResponses.getChannels);
