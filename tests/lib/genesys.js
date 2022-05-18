@@ -28,6 +28,37 @@ const genesys = {
     email: 'slav@videoengager.com',
     username: 'slav@videoengager.com'
   },
+  userResponseWithAuth: {
+    name: 'Slav',
+    division: {
+      name: 'Home'
+    },
+    email: 'slav@videoengager.com',
+    username: 'slav@videoengager.com',
+    authorization: {
+      permissions: [
+        'integration:smartVideoApps:view'
+      ],
+      roles: [
+        {
+          name: 'SmartVideo Agent'
+        }
+      ],
+      permissionPolicies: [
+        {
+          domain: 'integration',
+          entityName: 'smartVideoApps',
+          allowConditions: false,
+          actionSet: [
+            'view'
+          ]
+        }
+      ]
+    },
+    organization: {
+      id: 'ORGANIZATION_ID'
+    }
+  },
   conversationSummary: {
     id: 'AGENT_USER_ID',
     conversationSummary: {

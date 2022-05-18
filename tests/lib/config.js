@@ -64,6 +64,27 @@ const environments = {
     queue: 'Support',
     logLevel: 'warn'
   },
+  preproduction: {
+    pak: 'c50859ee-fda4-258b-6c34-d77566373a7b',
+    externalId: 'Home',
+    firstName: 'Slav',
+    lastName: 'Hadjidimitrov',
+    email: 'f6668859-042a-4b04-b998-3e3261fb3dd4slav@videoengager.com',
+    password: '123456',
+    userName: 't',
+    id: '123',
+    subject: 'subj',
+    hideChat: true,
+    hideInfo: true,
+    baseURL: 'https://stage-videome.leadsecure.com',
+    organizationId: 'f6668859-042a-4b04-b998-3e3261fb3dd4',
+    deploymentId: '1b4b1124-b51c-4c38-899f-3a90066c76cf',
+    clientId: 'SOME_ID',
+    tennantId: 'IF9UduUVaQ3ldy8N',
+    environment: 'https://api.mypurecloud.de',
+    queue: 'Support',
+    logLevel: 'warn'
+  },
   production: {
     pak: 'd41cdd4e-4806-cab7-2b5d-4c3eae2470a8',
     externalId: 'videoEngager',
