@@ -16,6 +16,25 @@ const REDIRECT_URL = config.test_env.baseURL + '/static/index.html';
 const accessToken = veUtil.getUUID();
 const channelId = veUtil.getUUID();
 
+const createMockState = function (env) {
+  const pureCloudContext = {
+    conversationType: null,
+    conversationId: null,
+    pak: env.pak,
+    clientId: env.clientId,
+    puretoken: null,
+    environment: env.environment.substring(12),
+    langTag: null
+  };
+  return encodeURIComponent(btoa(JSON.stringify(pureCloudContext)));
+};
+const authHeader = {
+  location: genesysPageLocation +
+    '#access_token=' + accessToken +
+    '&expires_in=86399&token_type=bearer' +
+    '&state=' + createMockState(config.test_env)
+};
+
 describe('genesys page tests in iframe mode', function () {
   // prepare genesys page and visitor page instances
   const genesys = new Genesys();
@@ -39,9 +58,6 @@ describe('genesys page tests in iframe mode', function () {
       client_id: config.test_env.clientId,
       redirect_uri: encodeURIComponent(genesysPageLocation)
     });
-    const authHeader = {
-      location: genesysPageLocation + '#access_token=' + accessToken + '&expires_in=86399&token_type=bearer'
-    };
 
     // mandatory
     mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authHeader);
@@ -212,10 +228,6 @@ describe('genesys page tests in popup mode', function () {
     genesysResponses.getChannels.entities[0].connectUri = `ws://localhost:${SOCKET_SERVER_PORT}/`;
     genesysResponses.getChannels.entities[0].id = channelId;
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
-
-    const authHeader = {
-      location: genesysPageLocation + '#access_token=' + accessToken + '&expires_in=86399&token_type=bearer'
-    };
 
     mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authHeader);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
