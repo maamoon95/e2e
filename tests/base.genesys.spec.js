@@ -26,7 +26,7 @@ const createMockState = function (env) {
     environment: env.environment.substring(12),
     langTag: null
   };
-  return encodeURIComponent(btoa(JSON.stringify(pureCloudContext)));
+  return encodeURIComponent(window.btoa(JSON.stringify(pureCloudContext)));
 };
 const authHeader = {
   location: genesysPageLocation +
