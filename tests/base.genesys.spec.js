@@ -15,24 +15,25 @@ const genesysPageLocation = config.test_env.baseURL + '/static/genesys.purecloud
 const REDIRECT_URL = config.test_env.baseURL + '/static/index.html';
 const accessToken = veUtil.getUUID();
 const channelId = veUtil.getUUID();
+let genesysUrl;
 
-const createMockState = function (env) {
-  const pureCloudContext = {
-    conversationType: null,
-    conversationId: null,
-    pak: env.pak,
-    clientId: env.clientId,
-    puretoken: null,
-    environment: env.environment.substring(12),
-    langTag: null
-  };
-  return encodeURIComponent(Buffer.from(JSON.stringify(pureCloudContext)).toString('base64'));
+let genesysParams = {
+  langTag: 'en-us',
+  environment: null,
+  interaction: 1,
+  pak: null,
+  clientId: null
 };
-const authHeader = {
-  location: genesysPageLocation +
+
+
+function authHeader (genesysParams) 
+{ 
+  return {
+    location: genesysPageLocation +
     '#access_token=' + accessToken +
     '&expires_in=86399&token_type=bearer' +
-    '&state=' + createMockState(config.test_env)
+    '&state=' + encodeURIComponent(Buffer.from(JSON.stringify(genesysParams)).toString('base64'))
+}
 };
 
 describe('genesys page tests in iframe mode', function () {
@@ -60,7 +61,6 @@ describe('genesys page tests in iframe mode', function () {
     });
 
     // mandatory
-    mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authHeader);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization%2Cauthorization', method: 'GET' }, genesysResponses.userResponseWithAuth);
@@ -107,6 +107,11 @@ describe('genesys page tests in iframe mode', function () {
   beforeEach(async function () {
     VISITOR_SESSION_ID = veUtil.getUUID();
     visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
+    // construct genesys url by pak, env, clientId
+    genesysUrl = genesys.constructUrl(config.test_env, genesysParams);
+
+    let authRSP = authHeader(genesysParams);
+    mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authRSP);
   });
 
   afterEach(async function () {
@@ -131,8 +136,6 @@ describe('genesys page tests in iframe mode', function () {
   });
 
   it('outbound call: invite visitor, agent is in iframe', async function () {
-    // construct genesys url by pak, env, clientId
-    const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
     await genesys.openAsNew(genesysUrl);
     // click start video button
@@ -184,8 +187,6 @@ describe('genesys page tests in iframe mode', function () {
     expect(await visitor.shortUrlExpanded()).toBeTruthy();
     expect(await visitor.waitingToConnectOrAgent()).toBeTruthy();
 
-    // construct genesys url by pak, env, clientId
-    const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
     await genesys.openAsNew(genesysUrl);
     // test localstorage token
@@ -229,7 +230,6 @@ describe('genesys page tests in popup mode', function () {
     genesysResponses.getChannels.entities[0].id = channelId;
     genesysResponses.messages.entities[0].body = JSON.stringify({ interactionId: VISITOR_SESSION_ID });
 
-    mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authHeader);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
     mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization\\%2Cauthorization', method: 'GET' }, genesysResponses.userResponseWithAuth);
@@ -262,6 +262,11 @@ describe('genesys page tests in popup mode', function () {
   beforeEach(async function () {
     VISITOR_SESSION_ID = veUtil.getUUID();
     visitorUrl = visitor.constructUrlC2V(config.test_env, VISITOR_SESSION_ID);
+    // construct genesys url by pak, env, clientId
+    const genesysUrl = genesys.constructUrl(config.test_env, genesysParams);
+    let authRSP = authHeader(genesysParams);
+    mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authRSP);
+
   });
 
   afterEach(async function () {
@@ -283,8 +288,6 @@ describe('genesys page tests in popup mode', function () {
   });
 
   it('outbound call: invite visitor, open agent in popup by pickup button', async function () {
-    // construct genesys url by pak, env, clientId
-    const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
     await genesys.openAsNew(genesysUrl);
     // click start video button
@@ -337,9 +340,7 @@ describe('genesys page tests in popup mode', function () {
   });
 
   it('outbound call: invite visitor, open agent first in popup', async function () {
-    // construct genesys url by pak, env, clientId
-    const genesysUrl = genesys.constructUrl(config.test_env);
-    // open genesys page
+     // open genesys page
     await genesys.openAsNew(genesysUrl);
     // click start video button
     await genesys.authorized(accessToken);
@@ -409,8 +410,6 @@ describe('genesys page tests in popup mode', function () {
     // check visitor hang state
     expect(await visitor.shortUrlExpanded()).toBeTruthy();
     expect(await visitor.waitingToConnectOrAgent()).toBeTruthy();
-    // construct genesys url by pak, env, clientId
-    const genesysUrl = genesys.constructUrl(config.test_env);
     // open genesys page
     await genesys.openAsNew(genesysUrl);
     // test localstorage token
@@ -447,5 +446,39 @@ describe('genesys page tests in popup mode', function () {
     expect(agent.switchTo())
       .toThrow('NoSuchWindowError')
       .catch(function (e) { log.debug('handle exception to avoid crash', e); });
+  });
+  it('Should not blink on alerting, should blink on accepted callback, should stop on disconneted', async function () {
+    browser.sleep(4000);
+    let params = genesysParams;
+    params.interaction = 'ffff-ffff-ffff-ffff';
+    params.conversationId = 'ffff-ffff-ffff-ffff';
+    mockProxy.mockIt({ path: '/api/v2/conversations/ffff-ffff-ffff-ffff', method: 'GET' }, genesysResponses.callbackConversation);
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=conversationSummary', method: 'GET' }, genesysResponses.conversationSummary);
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization', method: 'GET' }, genesysResponses.userResponse);
+    log.debug("WTF RESP:" + JSON.stringify(genesysResponses.userResponse));
+    mockProxy.mockIt({ path: '/api/v2/users/me\\?expand=organization%2Cauthorization', method: 'GET' }, genesysResponses.userResponseWithAuth);
+
+    const genesysUrl = genesys.constructUrl(config.test_env, params);
+    log.debug('genesysParams' + JSON.stringify(genesysParams));
+    // open genesys page
+    log.debug('ABOUT TO OPEN GENESYS GLUE URL:' + genesysUrl);
+    let authRSP = authHeader(params);
+    log.debug("AUTH RESP" + JSON.stringify(authRSP));
+    mockProxy.mockIt({ path: '/oauth/(.*)', method: 'GET' }, null, 302, authRSP);
+
+    await genesys.openAsNew(genesysUrl);
+    expect(await genesys.c2vAvailable());
+    browser.sleep(4000);
+
+    mockProxy.sendSocketMsg(genesysResponses.callBackConnectMsg);
+    expect(await genesys.pickupAvailable());
+    browser.sleep(4000);
+
+    mockProxy.sendSocketMsg(genesysResponses.callBackDisconnectMsg);
+    // test localstorage token
+    expect(await genesys.c2vAvailable());
+    browser.sleep(4000);
+
+    // body...
   });
 });
