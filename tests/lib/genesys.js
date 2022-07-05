@@ -611,6 +611,211 @@ const genesys = {
         attributes: {}
       }
     ]
+  },
+  callBackConnectMsgAnotherID: {
+    "topicName": "v2.users.AGENT_USER_ID.conversations",
+    "version": "2",
+    "eventBody": {
+      "id": "ffff-ffff-ffff-f00d",
+      "participants": [{
+        "id": "9a0231a0-8882-41bb-9b2c-d2f275736270",
+        "connectedTime": "2022-07-04T20:04:12.131Z",
+        "name": "VideoCall from Slav Hajdidimitrov",
+        "queueId": "0e185c02-aca1-4a72-82ea-2e78684e2c89",
+        "purpose": "customer",
+        "wrapupRequired": false,
+        "wrapupExpected": false,
+        "attributes": {
+          "pcEnvironment": "mypurecloud.de",
+          "number": "",
+          "domainUrl": "https://staging.leadsecure.com/",
+          "veUrl": "https://staging.leadsecure.com/ve/BxQ00v"
+        },
+        "callbacks": [{
+          "state": "connected",
+          "initialState": "scheduled",
+          "id": "4abc9472-61cc-402a-83e3-28015dd7f30f",
+          "held": false,
+          "callbackNumbers": [""],
+          "callbackUserName": "VideoCall from Slav Hajdidimitrov",
+          "scriptId": "04427bf2-44e4-465d-af8d-24c9cc41e0d2",
+          "externalCampaign": false,
+          "skipEnabled": true,
+          "provider": "PureCloud Callback",
+          "timeoutSeconds": 0,
+          "connectedTime": "2022-07-04T20:04:12.131Z",
+          "callbackScheduledTime": "2022-07-04T20:03:12.235Z",
+          "afterCallWorkRequired": false,
+          "callerIdName": "Slav Hajdidimitrov",
+          "additionalProperties": {}
+        }],
+        "additionalProperties": {}
+      }, {
+        "id": "a5d47ef7-3e85-4c2b-81cb-13590bdaa184",
+        "connectedTime": "2022-07-04T20:04:12.132Z",
+        "endTime": "2022-07-04T20:07:20.528Z",
+        "queueId": "0e185c02-aca1-4a72-82ea-2e78684e2c89",
+        "purpose": "acd",
+        "wrapupRequired": false,
+        "wrapupExpected": false,
+        "conversationRoutingData": {
+          "queue": {
+            "id": "0e185c02-aca1-4a72-82ea-2e78684e2c89"
+          },
+          "language": {},
+          "priority": 0
+        },
+        "attributes": {
+          "pcEnvironment": "mypurecloud.de",
+          "number": "",
+          "domainUrl": "https://staging.leadsecure.com/",
+          "veUrl": "https://staging.leadsecure.com/ve/BxQ00v"
+        },
+        "callbacks": [{
+          "state": "disconnected",
+          "initialState": "scheduled",
+          "id": "83d66254-d366-4486-82a3-f42d6eb40f7f",
+          "held": false,
+          "disconnectType": "transfer",
+          "callbackNumbers": [""],
+          "callbackUserName": "VideoCall from Slav Hajdidimitrov",
+          "scriptId": "04427bf2-44e4-465d-af8d-24c9cc41e0d2",
+          "peerId": "4abc9472-61cc-402a-83e3-28015dd7f30f",
+          "externalCampaign": false,
+          "skipEnabled": true,
+          "provider": "PureCloud Callback",
+          "timeoutSeconds": 0,
+          "connectedTime": "2022-07-04T20:04:12.132Z",
+          "disconnectedTime": "2022-07-04T20:07:20.528Z",
+          "callbackScheduledTime": "2022-07-04T20:03:12.235Z",
+          "afterCallWorkRequired": false,
+          "callerIdName": "Slav Hajdidimitrov",
+          "additionalProperties": {}
+        }],
+        "additionalProperties": {}
+      }, {
+        "id": "d7230894-5770-4bb2-b41d-b2765e5cd5b0",
+        "endTime": "2022-07-04T20:04:35.306Z",
+        "userId": "AGENT_USER_ID",
+        "queueId": "0e185c02-aca1-4a72-82ea-2e78684e2c89",
+        "purpose": "agent",
+        "wrapupRequired": false,
+        "wrapupExpected": true,
+        "wrapupPrompt": "optional",
+        "conversationRoutingData": {
+          "queue": {},
+          "language": {},
+          "priority": 0
+        },
+        "alertingTimeoutMs": 30000,
+        "attributes": {},
+        "callbacks": [{
+          "state": "disconnected",
+          "initialState": "alerting",
+          "id": "e762f484-1ddb-4626-8880-ff029c13b0ad",
+          "held": false,
+          "disconnectType": "client",
+          "callbackNumbers": [""],
+          "callbackUserName": "VideoCall from Slav Hajdidimitrov",
+          "scriptId": "04427bf2-44e4-465d-af8d-24c9cc41e0d2",
+          "peerId": "4abc9472-61cc-402a-83e3-28015dd7f30f",
+          "externalCampaign": false,
+          "skipEnabled": true,
+          "provider": "PureCloud Callback",
+          "timeoutSeconds": 0,
+          "disconnectedTime": "2022-07-04T20:04:35.306Z",
+          "callbackScheduledTime": "2022-07-04T20:03:12.235Z",
+          "afterCallWorkRequired": false,
+          "callerIdName": "Slav Hajdidimitrov",
+          "additionalProperties": {}
+        }],
+        "additionalProperties": {}
+      }, {
+        "id": "e8750fcf-9785-48b4-9214-d79a275cbc66",
+        "endTime": "2022-07-04T20:05:05.831Z",
+        "userId": "AGENT_USER_ID",
+        "queueId": "0e185c02-aca1-4a72-82ea-2e78684e2c89",
+        "purpose": "agent",
+        "wrapupRequired": false,
+        "wrapupExpected": true,
+        "wrapupPrompt": "optional",
+        "conversationRoutingData": {
+          "queue": {},
+          "language": {},
+          "priority": 0
+        },
+        "alertingTimeoutMs": 30000,
+        "attributes": {},
+        "callbacks": [{
+          "state": "disconnected",
+          "initialState": "alerting",
+          "id": "58053931-7122-4d24-ae9d-c1f9eefa137f",
+          "held": false,
+          "disconnectType": "system",
+          "callbackNumbers": [""],
+          "callbackUserName": "VideoCall from Slav Hajdidimitrov",
+          "scriptId": "04427bf2-44e4-465d-af8d-24c9cc41e0d2",
+          "peerId": "4abc9472-61cc-402a-83e3-28015dd7f30f",
+          "externalCampaign": false,
+          "skipEnabled": true,
+          "provider": "PureCloud Callback",
+          "timeoutSeconds": 0,
+          "disconnectedTime": "2022-07-04T20:05:05.831Z",
+          "callbackScheduledTime": "2022-07-04T20:03:12.235Z",
+          "afterCallWorkRequired": false,
+          "callerIdName": "Slav Hajdidimitrov",
+          "additionalProperties": {}
+        }],
+        "additionalProperties": {}
+      }, {
+        "id": "5151853c-ca28-48da-bdcd-f15c46f0712e",
+        "connectedTime": "2022-07-04T20:07:20.528Z",
+        "userId": "AGENT_USER_ID",
+        "queueId": "0e185c02-aca1-4a72-82ea-2e78684e2c89",
+        "purpose": "agent",
+        "wrapupRequired": true,
+        "wrapupExpected": true,
+        "wrapupPrompt": "optional",
+        "startAcwTime": "2022-07-04T20:08:25.397Z",
+        "conversationRoutingData": {
+          "queue": {},
+          "language": {},
+          "priority": 0
+        },
+        "alertingTimeoutMs": 30000,
+        "attributes": {},
+        "callbacks": [{
+          "state": "connected",
+          "initialState": "alerting",
+          "id": "19c34168-ccb5-45d5-a9d9-a89caf74e586",
+          "held": false,
+          "disconnectType": "client",
+          "callbackNumbers": [""],
+          "callbackUserName": "VideoCall from Slav Hajdidimitrov",
+          "scriptId": "04427bf2-44e4-465d-af8d-24c9cc41e0d2",
+          "peerId": "4abc9472-61cc-402a-83e3-28015dd7f30f",
+          "externalCampaign": false,
+          "skipEnabled": true,
+          "provider": "PureCloud Callback",
+          "timeoutSeconds": 0,
+          "connectedTime": "2022-07-04T20:07:20.528Z",
+          "disconnectedTime": "2022-07-04T20:08:25.397Z",
+          "callbackScheduledTime": "2022-07-04T20:03:12.235Z",
+          "afterCallWork": {
+            "state": "pending",
+            "startTime": "2022-07-04T20:08:25.397Z"
+          },
+          "afterCallWorkRequired": false,
+          "callerIdName": "Slav Hajdidimitrov",
+          "additionalProperties": {}
+        }],
+        "additionalProperties": {}
+      }],
+      "recordingState": "none"
+    },
+    "metadata": {
+      "CorrelationId": "2074b130-f0a0-4722-9063-cdbac74c0aee"
+    }
   }, 
     callBackConnectMsg: {
     "topicName": "v2.users.AGENT_USER_ID.conversations",

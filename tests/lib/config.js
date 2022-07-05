@@ -3,10 +3,10 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const environments = {
   dev: {
     pak: 'DEV2',
-    externalId: 'videoEngager',
+    externalId: 'Home',
     firstName: 'name',
     lastName: 'last',
-    email: 't@t',
+    email: '327d10eb-0826-42cd-89b1-353ec67d33f8slav@videoengager.com',
     password: '1',
     userName: 't',
     id: '123',

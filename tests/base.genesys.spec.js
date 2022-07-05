@@ -91,7 +91,7 @@ describe('genesys page tests in iframe mode', function () {
     // start socket server for mock socket connection
     await mockProxy.startSocketServer(SOCKET_SERVER_PORT);
     // authenticate and set to default db
-    await veUtil.authenticate();
+    await veUtil.authenticate(config.test_env);
     await veUtil.setBrokerageProfile({
       branding:
         {
@@ -245,7 +245,7 @@ describe('genesys page tests in popup mode', function () {
     await mockProxy.startSSlProxyServer(PROXY_SERVER_PORT);
     await mockProxy.startHttpServer(PROXY_SERVER_PORT);
     await mockProxy.startSocketServer(SOCKET_SERVER_PORT);
-    await veUtil.authenticate();
+    await veUtil.authenticate(config.test_env);
     await veUtil.setBrokerageProfile({
       branding:
          {
@@ -475,9 +475,12 @@ describe('genesys page tests in popup mode', function () {
     browser.sleep(4000);
 
     mockProxy.sendSocketMsg(genesysResponses.callBackDisconnectMsg);
-    // test localstorage token
     expect(await genesys.c2vAvailable());
     browser.sleep(4000);
+
+    mockProxy.sendSocketMsg(genesysResponses.callBackConnectMsgAnotherID);
+    expect(await genesys.c2vAvailable());
+    browser.sleep(40000);
 
     // body...
   });
