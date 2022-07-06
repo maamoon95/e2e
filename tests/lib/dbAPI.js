@@ -9,6 +9,9 @@ const TEST_ENV = config.test_env;
  */
 const impersonateCreate = function () {
   const url = TEST_ENV.baseURL + '/api/partners/impersonateCreate';
+
+  log.debug('impersonateCreate failed with confObject' + JSON.stringify(TEST_ENV));
+
   return axios.post(url, {
     pak: TEST_ENV.pak,
     email: TEST_ENV.email,
@@ -18,7 +21,11 @@ const impersonateCreate = function () {
     division: 'Home',
     contactEmail: 'slav@videoengager.com',
     source: 'mypurecloud.de'
-  });
+  }).catch(function (e) {
+      log.debug('impersonateCreate failed with confObject' + JSON.stringify(TEST_ENV));
+      log.error(url + e.message);
+      return new Error(e);
+    });
 };
 
 const impersonate = function (confObject) {
@@ -31,7 +38,7 @@ const impersonate = function (confObject) {
       return result.data.token;
     })
     .catch(function (e) {
-      log.error(e.message);
+      log.error(url + ' ' + e.message);
       return Error(e);
     });
 };
@@ -62,7 +69,7 @@ const updateBrokerageProfile = function (token, update) {
     }
   })
     .catch(function (e) {
-      log.error(e.message);
+      log.error(url + e.message);
       return new Error(e);
     });
 };

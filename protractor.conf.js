@@ -8,7 +8,7 @@ const HtmlReporter = require('protractor-beautiful-reporter');
 const log = require('./tests/lib/logger');
 log.init(config.logger);
 
-global.TIMEOUT = 30000;
+global.TIMEOUT = 300000;
 
 const protractorConfig = {
   // The timeout for each script run on the browser. This should be longer

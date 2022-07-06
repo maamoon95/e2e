@@ -135,7 +135,7 @@ class MockProxy {
               connection.sendUTF(JSON.stringify({ eventBody: { message: 'pong' }, topicName: 'channel.metadata' }));
               socketConnected = true;
             }
-            connection.close();
+            //connection.close();
           });
         });
 
@@ -260,6 +260,15 @@ class MockProxy {
     this.closeSSlProxyServer();
     this.closeSocketServer();
     this.cleanMocks();
+  }
+
+  sendSocketMsg (msg) {
+    if (connection) {
+      log.debug('PUSHING WebSocket Message' + JSON.stringify(msg));
+      connection.sendUTF(JSON.stringify(msg));
+    } else {
+      log.error('No notififcation connection');
+    }
   }
 }
 

@@ -116,15 +116,12 @@ class Genesys extends Agent {
    * @param {Object} confObject environment configuration object
    * @returns {string} genesys page url
    */
-  constructUrl (confObject) {
+  constructUrl (confObject, genesysParams) {
     let url = confObject.baseURL + '/static/genesys.purecloud.html?';
-    const genesysParams = {
-      langTag: 'en-us',
-      environment: confObject.environment.substring(12),
-      interaction: 1,
-      pak: confObject.pak,
-      clientId: confObject.clientId
-    };
+    genesysParams.environment = confObject.environment.substring(12);
+    genesysParams.pak = confObject.pak;
+    genesysParams.clientId = confObject.clientId;
+    log.debug('genesysParams:' + JSON.stringify(genesysParams));
     url += veUtil.generateUrlParamters(genesysParams);
     return url;
   }
