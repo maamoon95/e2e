@@ -26,7 +26,7 @@ class Visitor extends Page {
 
   constructUrlC2V (confObject, sessionId) {
     const str = {
-      video_on: false,
+      video_on: true,
       sessionId: sessionId,
       hideChat: true,
       type: 'initial',
