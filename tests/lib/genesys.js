@@ -61,6 +61,40 @@ const genesys = {
       id: 'ORGANIZATION_ID'
     }
   },
+  userResponseWithLang: {
+    id: 'AGENT_USER_ID',
+    name: 'Slav',
+    division: {
+      name: 'Home'
+    },
+    email: '',
+    username: '',
+    languages: [],
+    acdAutoAnswer: false,
+    languagePreference: 'en-us',
+    organization: {
+      id: 'ORGANIZATION_ID'
+    }
+  },
+  userToken: {
+    organization: {
+      id: 'ORGANIZATION_ID',
+      name: 'videoengager'
+    },
+    homeOrganization: {
+      id: 'ORGANIZATION_ID'
+    },
+    authorizedScope: [
+      'everything'
+    ],
+    OAuthClient: {
+      id: 'OAUTH_ID',
+      name: 'OAUTH_NAME',
+      organization: {
+        id: 'ORGANIZATION_ID'
+      }
+    }
+  },
   conversationSummary: {
     id: 'AGENT_USER_ID',
     conversationSummary: {

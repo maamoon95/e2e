@@ -12,6 +12,10 @@ module.exports = class Page {
     // Instance browser handle
     this.myHandle = "";
   };
+
+  checkIfIdExist = async function (id) {
+    return await element(by.binding(id)).isPresent()
+  }
   
   switchTo = async function () {
     await browser.switchTo().window(this.myHandle);
