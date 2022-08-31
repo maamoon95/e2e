@@ -1,10 +1,10 @@
 const { browser, element, by } = require('protractor');
 const veUtil = require('../lib/veUtil');
-const Page = require('./page');
+const NextjsPage = require('./nextjsPage');
 const until = browser.ExpectedConditions;
 const log = require('../lib/logger');
-class SmartVideoSettings extends Page {
-  constructor () {
+class SmartVideoSettings extends NextjsPage {
+  constructor() {
     super();
     this.genesysIframe = null;
     this.BRANDING_TAB = 'brandingSettings-form';
@@ -33,7 +33,7 @@ class SmartVideoSettings extends Page {
 
   get tenantId () {
     return browser.wait(async function () {
-      const value = await element(by.id('smartVideoSettings.tenantId')).getAttribute('value');
+      const value = await element(by.testId('smartVideoSettings.tenantId')).getAttribute('value');
       if (!value) {
         return '';
       }

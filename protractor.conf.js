@@ -21,7 +21,12 @@ const protractorConfig = {
   // If true, only chromedriver will be started, not a standalone selenium.
   // Tests for browsers other than chrome will not run.
   directConnect: true,
-
+  plugins: [
+    {
+      // The module name
+      package: "protractor-react-selector"
+    }
+  ],
   // list of files / patterns to load in the browser
   specs: [
     'tests/base*.spec.js'
@@ -49,11 +54,19 @@ const protractorConfig = {
     defaultTimeoutInterval: 300000
   },
   onPrepare: function () {
+    by.addLocator('testId', function (value, parentElement) {
+      parentElement = parentElement || document;
+      return parentElement.querySelector(`[data-testid="${value}"]`)
+      // var nodes = parentElement.querySelectorAll('data-testid');
+      // return Array.prototype.filter.call(nodes, function (node) {
+      //   return (node.getAttribute('data-testid') === value);
+      // });
+    });
     browser.driver.sleep(1000);
     jasmine.getEnv().addReporter(
       new SpecReporter({
-      // Defaults: https://github.com/bcaudan/jasmine-spec-reporter#default-options
-      // Configuration: https://github.com/bcaudan/jasmine-spec-reporter/blob/master/src/configuration.ts
+        // Defaults: https://github.com/bcaudan/jasmine-spec-reporter#default-options
+        // Configuration: https://github.com/bcaudan/jasmine-spec-reporter/blob/master/src/configuration.ts
         suite: {
           displayNumber: true
         },

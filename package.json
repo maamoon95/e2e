@@ -18,6 +18,7 @@
     "http-proxy": "^1.18.1",
     "path-to-regexp": "^6.2.0",
     "protractor": "^7.0.0",
+    "protractor-react-selector": "^2.2.4",
     "uuid": "^8.3.2",
     "websocket": "^1.0.34",
     "winston": "0.8.1"

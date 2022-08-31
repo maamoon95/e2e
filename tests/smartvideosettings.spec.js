@@ -1,5 +1,5 @@
 /* global describe beforeAll beforeEach afterEach expect it xit afterAll */
-const { browser } = require('protractor');
+const { browser, element } = require('protractor');
 const config = require('./lib/config');
 const log = require('./lib/logger');
 const genesysResponses = require('./lib/genesys');
@@ -25,9 +25,9 @@ const genesysParams = {
 const authHeader = function (genesysParams) {
   return {
     location: pageLocation +
-    '#access_token=' + accessToken +
-    '&expires_in=86399&token_type=bearer' +
-    '&state=' + encodeURIComponent(Buffer.from(JSON.stringify(genesysParams)).toString('base64'))
+      '#access_token=' + accessToken +
+      '&expires_in=86399&token_type=bearer' +
+      '&state=' + encodeURIComponent(Buffer.from(JSON.stringify(genesysParams)).toString('base64'))
   };
 };
 
@@ -35,7 +35,7 @@ describe('settings page test', function () {
   // prepare settings page instance
   const smartVideoSettings = new SmartVideoSettings();
   pageLocation = smartVideoSettings.constructUrl(config.test_env, genesysParams, settingsPageLocation);
-
+  console.log('pageLocation: ' + pageLocation);
   // create proxy server
   const mockProxy = new MockProxy();
 
@@ -57,11 +57,11 @@ describe('settings page test', function () {
     await veUtil.authenticate(config.test_env);
     await veUtil.setBrokerageProfile({
       branding:
-        {
-          visitorShowPrecall: false,
-          enablePrecallWorkflow: false,
-          inviteUrl: config.test_env.baseURL
-        },
+      {
+        visitorShowPrecall: false,
+        enablePrecallWorkflow: false,
+        inviteUrl: config.test_env.baseURL
+      },
       newTheme: false,
       isPopup: false
     });
@@ -88,9 +88,14 @@ describe('settings page test', function () {
     await smartVideoSettings.openAsNew(pageLocation);
     // check access token
     await smartVideoSettings.authorized(accessToken);
+    // await new Promise(resolve => setTimeout(resolve, 10000));
     // check initial tab
     await expect(smartVideoSettings.activeTabId).toEqual(smartVideoSettings.BRANDING_TAB);
-    // check Smart Video tenantId text field
     await expect(smartVideoSettings.tenantId).toEqual(config.test_env.tennantId);
+    const brandingElement = element(by.testId('brandingSettings'));
+    await brandingElement.click();
+    await element(by.testId('brandingSettings.brandingEnablePin-main-label')).isPresent()
+    // check Smart Video tenantId text field
+
   });
 });
